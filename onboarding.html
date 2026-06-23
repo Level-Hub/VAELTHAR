@@ -251,8 +251,8 @@
     .habits-intro {
       background:var(--surf1); border:1px solid var(--border);
       border-radius:12px; padding:1rem 1.25rem;
-      display:flex; align-items:center; gap:.9rem;
-      margin-bottom:1.5rem;
+      display:flex; align-items:flex-start; gap:.9rem;
+      margin-bottom:1.5rem; overflow:hidden;
       font-size:.83rem; color:var(--txt-sec); line-height:1.55;
     }
     .habits-intro-icon {
@@ -262,10 +262,9 @@
     }
 
     .habit-seeds {
-      display:grid; grid-template-columns:1fr 1fr;
+      display:grid; grid-template-columns:1fr;
       gap:.6rem; margin-bottom:1.5rem;
     }
-    @media(max-width:560px) { .habit-seeds { grid-template-columns:1fr; } }
 
     .hs-item {
       display:flex; align-items:center; gap:.75rem;
@@ -288,10 +287,10 @@
       transition:border-color var(--dur-fast),background var(--dur-fast),color var(--dur-fast);
     }
     .hs-item.on .hs-box { border-color:var(--gold); background:var(--gold); color:#07070b; }
-    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; }
+    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; min-width:0; }
     .hs-exp {
       font-family:var(--font-data); font-size:.72rem; font-weight:700;
-      color:var(--gold-bright); white-space:nowrap;
+      color:var(--gold-bright); white-space:nowrap; flex-shrink:0;
     }
 
     /* Custom habit add */
@@ -429,11 +428,14 @@
     /* ── RESPONSIVE ── */
     @media(max-width:640px) {
       .ob-header { padding:1rem 1.25rem; }
-      .ob-body { padding:2rem 1rem; }
+      .ob-body { padding:1.5rem 1rem; }
       .ob-footer { padding:1.25rem 1rem; }
       .ob-steps { display:none; }
-      .roles-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+      .ob-panel { width:100%; max-width:100%; }
+      .roles-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
       .welcome-stats { grid-template-columns:repeat(3,1fr); }
+      .habit-add-row { flex-wrap:nowrap; }
+      .step-title { font-size:1.6rem; }
     }
   </style>
 </head>
