@@ -25,6 +25,8 @@ import {
   TABLES,
 } from '/api.js';
 
+import { store, STATE, hydrateFromProfile } from '/storage.js';
+
 
 /* ----------------------------------------------------------
    ROUTE MAP — where to send users
@@ -82,6 +84,9 @@ export async function initAuth() {
   if (_session) {
     _user    = _session.user;
     _profile = await fetchProfile(_user.id);
+    /* Hydrate reactive store ให้ทุก module ใช้ร่วมกันได้ */
+    hydrateFromProfile(_profile);
+    store.set(STATE.USER, _user);
   }
 
   _ready = true;
@@ -93,8 +98,12 @@ export async function initAuth() {
 
     if (_user) {
       _profile = await fetchProfile(_user.id);
+      hydrateFromProfile(_profile);
+      store.set(STATE.USER, _user);
     } else {
       _profile = null;
+      store.set(STATE.USER, null);
+      store.set(STATE.PROFILE, null);
     }
 
     _notifyListeners(event, currentState());

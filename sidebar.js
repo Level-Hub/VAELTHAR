@@ -85,8 +85,11 @@ let _storeUnsubs  = [];
 export async function initSidebar() {
   _collapsed = getSidebarCollapsed();
 
-  const { user, profile } = currentState();
-  if (!user || !profile) return; /* Guard — only render for authenticated users */
+  /* อ่านจาก reactive store — auth.js hydrate ไว้แล้วหลัง requireAuth() */
+  const user    = store.get(STATE.USER);
+  const profile = store.get(STATE.PROFILE);
+
+  if (!user || !profile) return; // Guard
 
   _sidebarEl = _build(profile);
   document.body.prepend(_sidebarEl);
