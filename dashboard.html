@@ -1096,6 +1096,20 @@
     if (!authState?.user) throw new Error('no user');
     const { user, profile } = authState;
 
+    /* ── DEBUG — ลบทิ้งหลัง fix ── */
+    {
+      const dbg = document.createElement('div');
+      dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a0a0a;color:#f1c40f;font-size:11px;padding:6px 10px;font-family:monospace;line-height:1.6;';
+      dbg.innerHTML = `
+        user: ${user?.id?.slice(0,8) ?? 'NULL'}<br>
+        profile: ${profile ? profile.display_name ?? 'no display_name' : 'NULL'}<br>
+        store.USER: ${store.get(STATE.USER)?.id?.slice(0,8) ?? 'NULL'}<br>
+        store.PROFILE: ${store.get(STATE.PROFILE)?.display_name ?? 'NULL'}
+      `;
+      document.body.appendChild(dbg);
+      setTimeout(() => dbg.remove(), 8000);
+    }
+
     /* ── ROLE GUARD — ถ้ายังไม่มี role ให้กลับ onboarding ── */
     {
       const { data: ur } = await supabase
