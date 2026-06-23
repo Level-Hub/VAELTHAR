@@ -269,6 +269,8 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;   /* prevent any child from causing horizontal scroll */
+  max-width: 100%;
 }
 
 body {
@@ -281,6 +283,8 @@ body {
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;   /* belt-and-suspenders — stops layout bleed on all pages */
+  max-width: 100%;
 }
 
 img, svg, video {

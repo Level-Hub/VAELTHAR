@@ -41,16 +41,21 @@
       min-height:100dvh;
       display:grid;
       grid-template-rows:auto 1fr auto;
+      width:100%;
+      max-width:100vw;
+      overflow-x:hidden;
     }
 
     /* ── HEADER ── */
     .ob-header {
       display:flex; align-items:center; justify-content:space-between;
-      padding:1.25rem 2rem;
+      padding:1rem 1.25rem;
       border-bottom:1px solid var(--border);
       background:rgba(10,10,15,.85);
       backdrop-filter:blur(12px);
       position:sticky; top:0; z-index:100;
+      overflow:hidden;
+      gap:.75rem;
     }
     .ob-logo {
       display:flex; align-items:center; gap:.6rem;
@@ -63,6 +68,8 @@
     /* Step indicator */
     .ob-steps {
       display:flex; align-items:center; gap:.5rem;
+      flex-shrink:0;
+      overflow:hidden;
     }
     .ob-step {
       display:flex; align-items:center; gap:.4rem;
@@ -83,6 +90,14 @@
     .ob-step.active .step-num { background:rgba(201,136,42,.12); border-color:var(--gold-dim); color:var(--gold-bright); }
     .ob-step.done   .step-num { background:rgba(39,174,96,.12); border-color:var(--green); color:var(--green-bright); }
     .step-div { width:28px; height:1px; background:var(--border); flex-shrink:0; }
+    .ob-step span.step-label { display:inline; }
+
+    @media (max-width: 480px) {
+      .ob-step span.step-label { display:none; }
+      .step-div { width:16px; }
+      .ob-header { padding:.85rem 1rem; }
+      .ob-footer { padding:.85rem 1rem; }
+    }
 
     /* ── MAIN CONTENT ── */
     .ob-body {
@@ -103,6 +118,7 @@
     .ob-panel {
       position:relative; z-index:1;
       width:100%; max-width:860px;
+      min-width:0;
     }
 
     /* ── STEP VIEWS ── */
@@ -374,7 +390,7 @@
 
     /* ── FOOTER NAV ── */
     .ob-footer {
-      padding:1.5rem 2rem;
+      padding:1rem 1.25rem;
       border-top:1px solid var(--border);
       display:flex; align-items:center; justify-content:space-between;
       gap:1rem;
