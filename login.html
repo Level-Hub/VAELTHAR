@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>เข้าสู่ระบบ — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void:#0a0a0f; --surf1:#111118; --surf2:#18181f; --surf3:#22222c;
+      --border:#2e2e3a; --border-warm:#3a3020; --border-glow:#4a3f2a;
+      --gold-dim:#7a5c1e; --gold:#c9882a; --gold-bright:#f0b849;
+      --gold-glow:rgba(201,136,42,.14);
+      --red:#c0392b; --red-bright:#e74c3c;
+      --green:#1e7a4a; --green-bright:#27ae60;
+      --txt:#e8e4d8; --txt-sec:#9a9098; --txt-muted:#5a5468;
+      --font-display:'Cinzel',Georgia,serif;
+      --font-data:'Rajdhani',monospace;
+      --font-body:'Inter',system-ui,sans-serif;
+      --ease-out:cubic-bezier(.16,1,.3,1);
+      --dur-fast:120ms; --dur-base:240ms;
+      --glow-gold:0 0 24px rgba(201,136,42,.5),0 0 64px rgba(201,136,42,.14);
+      --glow-gold-sm:0 0 10px rgba(201,136,42,.5);
+    }
+    *,*::before,*::after {
+      box-sizing:border-box; margin:0; padding:0;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;
+    }
+    html { font-size:16px; }
+    body {
+      background:var(--void); color:var(--txt);
+      font-family:var(--font-body); line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      min-height:100dvh;
+      display:grid; grid-template-columns:1fr 1fr;
+    }
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    a{color:var(--gold);text-decoration:none;outline:none;}
+    a:hover{color:var(--gold-bright);}
+    a:focus-visible{outline:1px solid var(--gold-dim);outline-offset:3px;border-radius:3px;}
+    button{font-family:var(--font-body);cursor:pointer;border:none;background:none;outline:none;}
+    button:focus-visible{outline:1px solid var(--gold-dim);outline-offset:3px;border-radius:3px;}
+    svg{display:block;}
+    ::selection{background:rgba(201,136,42,.18);color:var(--gold-bright);}
+
+    .logo-mark{width:30px;height:30px;flex-shrink:0;}
+
+    /* ── LEFT ── */
+    .left {
+      position:relative; display:flex; flex-direction:column;
+      justify-content:space-between; padding:2.5rem;
+      background:var(--surf1); border-right:1px solid var(--border);
+      overflow:hidden;
+    }
+    @media(max-width:900px){.left{display:none;}}
+
+    .left-grid {
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(201,136,42,.055) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,136,42,.055) 1px,transparent 1px);
+      background-size:52px 52px;
+      mask-image:radial-gradient(ellipse 90% 80% at 60% 40%,black,transparent);
+      pointer-events:none;
+    }
+    .left-glow {
+      position:absolute; top:35%; left:60%;
+      transform:translate(-50%,-50%);
+      width:600px; height:500px;
+      background:radial-gradient(ellipse,rgba(201,136,42,.065) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .left-scan {
+      position:absolute;inset:0;
+      background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);
+      pointer-events:none;
+    }
+
+    /* Emblem — the left panel's centerpiece */
+    .left-emblem {
+      position:absolute;
+      bottom:2.5rem; right:2.5rem;
+      z-index:0; pointer-events:none;
+      opacity:.06;
+    }
+
+    .left-top{position:relative;z-index:1;}
+    .left-logo {
+      display:flex; align-items:center; gap:.6rem;
+      font-family:var(--font-display); font-size:1rem; font-weight:700;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--txt-sec);
+      user-select:none;
+    }
+    .left-body {
+      position:relative;z-index:1; flex:1;
+      display:flex; flex-direction:column; justify-content:center; padding:2rem 0;
+    }
+    .left-season {
+      font-size:.64rem; font-weight:600; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--gold-dim); margin-bottom:1.75rem;
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .left-season::before{content:'';width:22px;height:1px;background:var(--gold-dim);display:block;}
+    .left-heading {
+      font-family:var(--font-display);
+      font-size:clamp(2rem,3.5vw,3.1rem); font-weight:900;
+      letter-spacing:.04em; text-transform:uppercase;
+      line-height:1.04; color:var(--txt); margin-bottom:1.5rem;
+    }
+    .left-heading em{font-style:normal;color:var(--gold-bright);text-shadow:var(--glow-gold-sm);}
+    .left-desc{font-size:.9rem;color:var(--txt-sec);line-height:1.76;max-width:380px;margin-bottom:2.5rem;}
+
+    /* ── Chronicle ── */
+    .chronicle { display:flex; flex-direction:column; gap:.6rem; }
+
+    .chronicle-title {
+      font-size:.6rem; font-weight:600; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--txt-muted);
+      display:flex; align-items:center; gap:.6rem; margin-bottom:.25rem;
+    }
+    .chronicle-title::before { content:''; flex:1; height:1px; background:var(--border); }
+    .chronicle-title::after  { content:''; flex:1; height:1px; background:var(--border); }
+
+    .chr-item {
+      display:flex; align-items:center; gap:.8rem;
+      padding:.65rem .9rem;
+      background:rgba(255,255,255,.025);
+      border:1px solid var(--border);
+      border-radius:8px;
+      position:relative; overflow:hidden;
+      transition:border-color var(--dur-base) var(--ease-out);
+    }
+    .chr-item::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:2px;
+    }
+    .chr-item.type-quest::before  { background:var(--gold-dim); }
+    .chr-item.type-guild::before  { background:#4a2a7a; }
+    .chr-item.type-season::before { background:#1e5a7a; }
+
+    .chr-dot {
+      width:28px; height:28px; border-radius:6px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.75rem;
+    }
+    .chr-item.type-quest  .chr-dot { background:rgba(201,136,42,.1);  color:var(--gold); }
+    .chr-item.type-guild  .chr-dot { background:rgba(74,42,122,.18);   color:#a06de0; }
+    .chr-item.type-season .chr-dot { background:rgba(30,90,122,.18);   color:#5aaddd; }
+
+    .chr-body { flex:1; min-width:0; }
+    .chr-event { font-size:.78rem; font-weight:600; color:var(--txt); line-height:1.3; margin-bottom:2px; }
+    .chr-meta  { font-size:.66rem; color:var(--txt-muted); }
+    .chr-badge {
+      font-family:var(--font-data); font-size:.72rem; font-weight:700;
+      white-space:nowrap; text-align:right; line-height:1.2;
+    }
+    .chr-item.type-quest  .chr-badge { color:var(--gold-bright); }
+    .chr-item.type-guild  .chr-badge { color:#a06de0; }
+    .chr-item.type-season .chr-badge { color:#5aaddd; }
+
+    /* countdown ring */
+    .season-ring {
+      position:relative; width:28px; height:28px; flex-shrink:0;
+    }
+    .season-ring svg { position:absolute; inset:0; transform:rotate(-90deg); }
+    .ring-bg  { stroke:rgba(90,173,221,.15); fill:none; stroke-width:2.5; }
+    .ring-arc { stroke:#5aaddd; fill:none; stroke-width:2.5; stroke-linecap:round;
+                stroke-dasharray:75.4; stroke-dashoffset:18; transition:stroke-dashoffset .5s var(--ease-out); }
+    .ring-lbl { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+                font-family:var(--font-data); font-size:.48rem; font-weight:700; color:#5aaddd; }
+
+    .left-bottom {
+      position:relative;z-index:1;
+      display:flex;gap:2rem; padding-top:2rem; border-top:1px solid var(--border);
+    }
+    .lstat-val{font-family:var(--font-data);font-size:1.4rem;font-weight:700;color:var(--gold-bright);letter-spacing:-.02em;line-height:1;}
+    .lstat-lbl{font-size:.6rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-muted);margin-top:.3rem;}
+
+    /* ── RIGHT ── */
+    .right{display:flex;flex-direction:column;min-height:100dvh;background:var(--void);}
+    .r-header {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:1.5rem 2rem; border-bottom:1px solid var(--border);
+    }
+    .r-header-logo {
+      display:none;
+      font-family:var(--font-display);font-size:.88rem;font-weight:700;
+      letter-spacing:.2em;text-transform:uppercase;color:var(--txt-sec);
+      align-items:center;gap:.5rem;user-select:none;
+    }
+    @media(max-width:900px){.r-header-logo{display:flex;}}
+    .r-header-right{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--txt-muted);margin-left:auto;}
+    .r-header-right a{font-weight:600;}
+    .r-body{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 2rem;}
+    .form-card{width:100%;max-width:420px;}
+
+    .form-eyebrow {
+      font-size:.64rem;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+      color:var(--gold-dim);margin-bottom:.85rem;
+      display:flex;align-items:center;gap:.55rem;
+    }
+    .form-eyebrow::before{content:'';width:18px;height:1px;background:var(--gold-dim);display:block;}
+    .form-title{font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);margin-bottom:.4rem;}
+    .form-sub{font-size:.85rem;color:var(--txt-muted);margin-bottom:2.25rem;}
+
+    /* fields */
+    .field{margin-bottom:1.1rem;}
+    .field-lbl{
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:.73rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+      color:var(--txt-muted);margin-bottom:.44rem;
+    }
+    .field-lbl a{font-size:.73rem;text-transform:none;letter-spacing:0;font-weight:500;}
+    .input-wrap{position:relative;}
+    .in-icon{
+      position:absolute;left:.9rem;top:50%;transform:translateY(-50%);
+      color:var(--txt-muted);pointer-events:none;display:flex;align-items:center;
+    }
+    .in-sfx{
+      position:absolute;right:.9rem;top:50%;transform:translateY(-50%);
+      color:var(--txt-muted);cursor:pointer;display:flex;align-items:center;
+      transition:color var(--dur-fast) var(--ease-out);
+    }
+    .in-sfx:hover{color:var(--txt);}
+    input[type="email"],input[type="password"],input[type="text"]{
+      width:100%;height:46px;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:8px;
+      color:var(--txt);
+      font-size:.9rem;
+      padding:0 2.8rem;
+      outline:none;
+      transition:border-color var(--dur-fast) var(--ease-out),
+                 box-shadow var(--dur-fast) var(--ease-out),
+                 background var(--dur-fast) var(--ease-out);
+    }
+    input::placeholder{color:var(--txt-muted);}
+    input:focus{border-color:var(--gold-dim);background:var(--surf3);box-shadow:0 0 0 3px rgba(201,136,42,.1);}
+    input.error{border-color:var(--red);}
+    input.valid{border-color:var(--green);}
+
+    .field-err{
+      display:none;align-items:center;gap:.4rem;
+      font-size:.73rem;color:var(--red-bright);margin-top:.4rem;
+    }
+    .field-err.show{display:flex;}
+
+    /* alert */
+    .alert{
+      display:none;align-items:flex-start;gap:.65rem;
+      padding:.9rem 1rem;border-radius:8px;
+      font-size:.82rem;margin-bottom:1.2rem;
+      border:1px solid transparent;
+    }
+    .alert.show{display:flex;}
+    .alert--error{background:rgba(192,57,43,.1);border-color:rgba(192,57,43,.35);color:var(--red-bright);}
+    .alert--success{background:rgba(39,174,96,.08);border-color:rgba(39,174,96,.3);color:var(--green-bright);}
+    .alert-icon{flex-shrink:0;margin-top:.05rem;}
+
+    /* divider */
+    .or-divider{
+      display:flex;align-items:center;gap:.75rem;
+      margin:1.4rem 0;font-size:.73rem;color:var(--txt-muted);
+    }
+    .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* submit */
+    .btn-submit{
+      width:100%;height:48px;
+      background:var(--gold);
+      color:#07070b;
+      border-radius:8px;
+      font-family:var(--font-body);
+      font-weight:700;font-size:.88rem;
+      letter-spacing:.08em;text-transform:uppercase;
+      border:1px solid var(--gold);
+      cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:.55rem;
+      transition:background var(--dur-fast) var(--ease-out),
+                 border-color var(--dur-fast) var(--ease-out),
+                 box-shadow var(--dur-fast) var(--ease-out),
+                 transform var(--dur-fast) var(--ease-out);
+      position:relative;overflow:hidden;
+      margin-top:1.4rem;
+    }
+    .btn-submit:hover{background:var(--gold-bright);border-color:var(--gold-bright);box-shadow:var(--glow-gold);}
+    .btn-submit:active{transform:scale(.98);}
+    .btn-submit:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none;}
+    .btn-submit.loading .btn-text{opacity:0;}
+    .btn-submit.loading .spinner{opacity:1;}
+    .spinner{
+      position:absolute;width:20px;height:20px;
+      border:2px solid rgba(7,7,11,.2);
+      border-top-color:#07070b;
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+      opacity:0;transition:opacity var(--dur-fast) var(--ease-out);
+    }
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .btn-text{display:flex;align-items:center;gap:.5rem;transition:opacity var(--dur-fast) var(--ease-out);}
+
+    /* footer */
+    .form-foot{text-align:center;font-size:.82rem;color:var(--txt-muted);margin-top:1.5rem;}
+    .form-foot a{font-weight:600;}
+    .r-footer{
+      border-top:1px solid var(--border);
+      padding:1.2rem 2rem;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:.5rem;
+    }
+    .rf-links{list-style:none;display:flex;gap:1.5rem;}
+    .rf-links a{font-size:.73rem;color:var(--txt-muted);}
+    .rf-links a:hover{color:var(--txt);}
+    .rf-copy{font-size:.73rem;color:var(--txt-muted);}
+  </style>
+</head>
+<body>
+
+  <!-- ── LEFT PANEL ── -->
+  <div class="left">
+    <div class="left-grid" aria-hidden="true"></div>
+    <div class="left-glow"  aria-hidden="true"></div>
+    <div class="left-scan"  aria-hidden="true"></div>
+
+    <!-- Big decorative hexagon -->
+    <div class="left-emblem" aria-hidden="true">
+      <svg width="420" height="420" viewBox="0 0 30 30" fill="none">
+        <path d="M15 1L28 8.5V21.5L15 29L2 21.5V8.5L15 1Z" stroke="#c9882a" stroke-width="0.6" fill="none"/>
+        <path d="M15 6L25 11.5V18.5L15 24L5 18.5V11.5L15 6Z" stroke="#c9882a" stroke-width="0.4" fill="none"/>
+        <circle cx="15" cy="15" r="3" fill="#c9882a"/>
+      </svg>
+    </div>
+
+    <div class="left-top">
+      <div class="left-logo">
+        <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+          <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+          <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+          <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+        </svg>
+        Vaelthar
+      </div>
+    </div>
+
+    <div class="left-body">
+      <div class="left-season">Last Seen Chronicle</div>
+      <h1 class="left-heading">
+        คุณหายไป<br/>
+        <em>นานแล้ว</em>
+      </h1>
+      <p class="left-desc">โลกไม่เคยหยุดรอ — นี่คือสิ่งที่เกิดขึ้นระหว่างที่คุณไม่อยู่</p>
+
+      <div class="chronicle">
+        <div class="chronicle-title">สิ่งที่เกิดขึ้น</div>
+
+        <div class="chr-item type-quest">
+          <div class="chr-dot" id="ci1"></div>
+          <div class="chr-body">
+            <div class="chr-event">Sakon_V8 วิ่ง 10 กม. &amp; ขึ้น Rank ใหม่</div>
+            <div class="chr-meta">Scholar · 3 ชม.ที่แล้ว</div>
+          </div>
+          <div class="chr-badge">+420<br/>EXP</div>
+        </div>
+
+        <div class="chr-item type-guild">
+          <div class="chr-dot" id="ci2"></div>
+          <div class="chr-body">
+            <div class="chr-event">Guild "Iron Oath" เปิด Weekly War</div>
+            <div class="chr-meta">Guild Event · เปิดอีก 2 วัน</div>
+          </div>
+          <div class="chr-badge">×2.0<br/>EXP</div>
+        </div>
+
+        <div class="chr-item type-quest">
+          <div class="chr-dot" id="ci3"></div>
+          <div class="chr-body">
+            <div class="chr-event">Quest "อ่านหนังสือ 7 วันติด" ถูกทำสำเร็จ 84 ครั้ง</div>
+            <div class="chr-meta">Daily Challenge · เมื่อวาน</div>
+          </div>
+          <div class="chr-badge">84<br/>คน</div>
+        </div>
+
+        <div class="chr-item type-season">
+          <div class="season-ring">
+            <svg viewBox="0 0 28 28" width="28" height="28">
+              <circle class="ring-bg"  cx="14" cy="14" r="12"/>
+              <circle class="ring-arc" cx="14" cy="14" r="12" id="seasonArc"/>
+            </svg>
+            <div class="ring-lbl" id="seasonDays">18d</div>
+          </div>
+          <div class="chr-body">
+            <div class="chr-event">Season I สิ้นสุดในอีก 18 วัน</div>
+            <div class="chr-meta">Ember of the Ashlands · Rank Reset</div>
+          </div>
+          <div class="chr-badge" style="color:#5aaddd">Top 3<br/>รอดู</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-bottom">
+      <div>
+        <div class="lstat-val">3,841</div>
+        <div class="lstat-lbl">Online Now</div>
+      </div>
+      <div>
+        <div class="lstat-val">12,056</div>
+        <div class="lstat-lbl">Quest วันนี้</div>
+      </div>
+      <div>
+        <div class="lstat-val">18d</div>
+        <div class="lstat-lbl">Season End</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL ── -->
+  <div class="right">
+    <div class="r-header">
+      <a href="index.html" class="r-header-logo">
+        <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+          <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+          <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+          <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+        </svg>
+        VAELTHAR
+      </a>
+      <div class="r-header-right">
+        <span>ยังไม่มีบัญชี?</span>
+        <a href="register.html">สมัครสมาชิก</a>
+      </div>
+    </div>
+
+    <div class="r-body">
+      <div class="form-card">
+        <div class="form-eyebrow">เข้าสู่ระบบ</div>
+        <h2 class="form-title">ยินดีต้อนรับกลับ</h2>
+        <p class="form-sub">กรอก Username หรือ Email และรหัสผ่านเพื่อดำเนินการต่อ</p>
+
+        <div class="alert" id="alertBox" role="alert">
+          <span class="alert-icon" id="alertIcon"></span>
+          <span id="alertMsg"></span>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <div class="field-lbl"><span>Username หรือ Email</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-email"></span>
+              <input type="text" id="identifier" placeholder="username หรือ your@email.com" autocomplete="username email" />
+            </div>
+            <div class="field-err" id="er-email">
+              <span id="er-email-ic"></span>
+              <span id="er-email-msg">กรุณากรอก Username หรือ Email</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-lbl">
+              <span>รหัสผ่าน</span>
+              <a href="forgot.html">ลืมรหัสผ่าน?</a>
+            </div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-pw"></span>
+              <input type="password" id="password" placeholder="รหัสผ่านของคุณ" autocomplete="current-password" />
+              <span class="in-sfx" id="togglePw"><span id="ic-eye"></span></span>
+            </div>
+            <div class="field-err" id="er-pw">
+              <span id="er-pw-ic"></span>
+              <span id="er-pw-msg">กรุณากรอกรหัสผ่าน</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <div class="spinner"></div>
+            <span class="btn-text"><span id="ic-btn"></span>เข้าสู่ระบบ</span>
+          </button>
+        </form>
+
+        <div class="form-foot">ยังไม่มีบัญชี? <a href="register.html">สมัครสมาชิกฟรี</a></div>
+      </div>
+    </div>
+
+    <footer class="r-footer">
+      <ul class="rf-links">
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+      <span class="rf-copy">© 2025 VAELTHAR</span>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { icon } from '/js/ui/icons.js';
+
+    /* Icons */
+    document.getElementById('ic-email').innerHTML    = icon('profile', 16);
+    document.getElementById('ic-pw').innerHTML       = icon('lock', 16);
+    document.getElementById('ic-eye').innerHTML      = icon('eye', 15);
+    document.getElementById('ic-btn').innerHTML      = icon('exp', 14);
+    document.getElementById('alertIcon').innerHTML   = icon('alert_circle', 16);
+    document.getElementById('ci1').innerHTML         = icon('herald', 14);
+    document.getElementById('ci2').innerHTML         = icon('trophy', 14);
+    document.getElementById('ci3').innerHTML         = icon('scholar', 14);
+    ['email','pw'].forEach(k => {
+      const el = document.getElementById(`er-${k}-ic`);
+      if (el) el.innerHTML = icon('alert_circle', 13);
+    });
+
+    /* Password visibility toggle */
+    let visible = false;
+    document.getElementById('togglePw').addEventListener('click', () => {
+      visible = !visible;
+      document.getElementById('password').type = visible ? 'text' : 'password';
+      document.getElementById('ic-eye').innerHTML = icon(visible ? 'eye_off' : 'eye', 15);
+    });
+
+    /* Alert helpers */
+    function showAlert(msg, type = 'error') {
+      const box = document.getElementById('alertBox');
+      document.getElementById('alertMsg').textContent = msg;
+      box.className = `alert alert--${type} show`;
+    }
+    function hideAlert() {
+      document.getElementById('alertBox').classList.remove('show');
+    }
+
+    /* Field helpers */
+    function showErr(k, msg) {
+      if (msg) document.getElementById(`er-${k}-msg`).textContent = msg;
+      document.getElementById(`er-${k}`)?.classList.add('show');
+      const fieldId = k === 'pw' ? 'password' : 'identifier';
+      document.getElementById(fieldId)?.classList.add('error');
+    }
+    function clrErr(k) {
+      document.getElementById(`er-${k}`)?.classList.remove('show');
+      const fieldId = k === 'pw' ? 'password' : 'identifier';
+      document.getElementById(fieldId)?.classList.remove('error');
+    }
+
+    /* Inline validation on blur */
+    document.getElementById('identifier').addEventListener('blur', function () {
+      if (!this.value.trim()) showErr('email', 'กรุณากรอก Username หรือ Email');
+      else clrErr('email');
+    });
+    document.getElementById('password').addEventListener('blur', function () {
+      if (!this.value) showErr('pw', 'กรุณากรอกรหัสผ่าน');
+      else clrErr('pw');
+    });
+
+    /* Submit */
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      hideAlert();
+
+      const identifier = document.getElementById('identifier').value.trim();
+      const pw         = document.getElementById('password').value;
+      let ok = true;
+
+      if (!identifier) { showErr('email', 'กรุณากรอก Username หรือ Email'); ok = false; }
+      if (!pw)         { showErr('pw', 'กรุณากรอกรหัสผ่าน'); ok = false; }
+      if (!ok) return;
+
+      const btn = document.getElementById('submitBtn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        const { loginWithIdentifier } = await import('/js/core/auth.js');
+        await loginWithIdentifier(identifier, pw);
+        /* auth.js will redirect to dashboard */
+      } catch (err) {
+        const m    = err?.message || '';
+        const code = err?.code    || '';
+        if (code === 'username_not_found') {
+          showAlert('ไม่พบ Username นี้ในระบบ');
+        } else if (m.includes('Invalid') || m.includes('credentials') || m.includes('password')) {
+          showAlert('Username/Email หรือรหัสผ่านไม่ถูกต้อง');
+        } else if (m.includes('confirmed') || m.includes('verify')) {
+          showAlert('กรุณายืนยัน Email ก่อนเข้าสู่ระบบ');
+        } else {
+          showAlert(m || 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        }
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    });
+
+    /* Redirect logged-in users away */
+    try {
+      const { requireGuest } = await import('/js/core/auth.js');
+      await requireGuest();
+    } catch {}
+  </script>
+</body>
+</html>

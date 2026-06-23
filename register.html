@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>สมัครสมาชิก — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void:#0a0a0f; --surf1:#111118; --surf2:#18181f; --surf3:#22222c;
+      --border:#2e2e3a; --border-warm:#3a3020; --border-glow:#4a3f2a;
+      --gold-dim:#7a5c1e; --gold:#c9882a; --gold-bright:#f0b849;
+      --gold-glow:rgba(201,136,42,.14);
+      --red:#c0392b; --red-bright:#e74c3c;
+      --green:#1e7a4a; --green-bright:#27ae60;
+      --txt:#e8e4d8; --txt-sec:#9a9098; --txt-muted:#5a5468;
+      --font-display:'Cinzel',Georgia,serif;
+      --font-data:'Rajdhani',monospace;
+      --font-body:'Inter',system-ui,sans-serif;
+      --ease-out:cubic-bezier(.16,1,.3,1);
+      --dur-fast:120ms; --dur-base:240ms;
+      --glow-gold:0 0 24px rgba(201,136,42,.5),0 0 64px rgba(201,136,42,.14);
+      --glow-gold-sm:0 0 10px rgba(201,136,42,.5);
+    }
+    *,*::before,*::after {
+      box-sizing:border-box; margin:0; padding:0;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;
+    }
+    html { font-size:16px; }
+    body {
+      background:var(--void); color:var(--txt);
+      font-family:var(--font-body); line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      min-height:100dvh;
+      display:grid; grid-template-columns:1fr 1fr;
+    }
+    @media(max-width:900px){body{grid-template-columns:1fr;}}
+    a{color:var(--gold);text-decoration:none;outline:none;}
+    a:hover{color:var(--gold-bright);}
+    a:focus-visible{outline:1px solid var(--gold-dim);outline-offset:3px;border-radius:3px;}
+    button{font-family:var(--font-body);cursor:pointer;border:none;background:none;outline:none;}
+    button:focus-visible{outline:1px solid var(--gold-dim);outline-offset:3px;border-radius:3px;}
+    svg{display:block;}
+    ::selection{background:rgba(201,136,42,.18);color:var(--gold-bright);}
+
+    /* LOGO MARK — same as all pages */
+    .logo-mark{width:30px;height:30px;flex-shrink:0;}
+
+    /* ── LEFT ── */
+    .left {
+      position:relative; display:flex; flex-direction:column;
+      justify-content:space-between; padding:2.5rem;
+      background:var(--surf1); border-right:1px solid var(--border);
+      overflow:hidden;
+    }
+    @media(max-width:900px){.left{display:none;}}
+
+    .left-grid {
+      position:absolute;inset:0;
+      background-image:
+        linear-gradient(rgba(201,136,42,.055) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(201,136,42,.055) 1px,transparent 1px);
+      background-size:52px 52px;
+      mask-image:radial-gradient(ellipse 90% 80% at 40% 40%,black,transparent);
+      pointer-events:none;
+    }
+    .left-glow {
+      position:absolute; top:35%; left:40%;
+      transform:translate(-50%,-50%);
+      width:600px; height:500px;
+      background:radial-gradient(ellipse,rgba(201,136,42,.065) 0%,transparent 65%);
+      pointer-events:none;
+    }
+    .left-scan {
+      position:absolute;inset:0;
+      background-image:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);
+      pointer-events:none;
+    }
+    .left-top{position:relative;z-index:1;}
+    .left-logo {
+      display:flex; align-items:center; gap:.6rem;
+      font-family:var(--font-display); font-size:1rem; font-weight:700;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--txt-sec);
+      user-select:none;
+    }
+    .left-body {
+      position:relative;z-index:1; flex:1;
+      display:flex; flex-direction:column; justify-content:center; padding:2rem 0;
+    }
+    .left-season {
+      font-size:.64rem; font-weight:600; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--gold-dim); margin-bottom:1.75rem;
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .left-season::before{content:'';width:22px;height:1px;background:var(--gold-dim);display:block;}
+    .left-heading {
+      font-family:var(--font-display);
+      font-size:clamp(2rem,3.5vw,3.1rem); font-weight:900;
+      letter-spacing:.04em; text-transform:uppercase;
+      line-height:1.04; color:var(--txt); margin-bottom:1.5rem;
+    }
+    .left-heading em{font-style:normal;color:var(--gold-bright);text-shadow:var(--glow-gold-sm);}
+    .left-desc{font-size:.9rem;color:var(--txt-sec);line-height:1.76;max-width:380px;margin-bottom:2.5rem;}
+    /* ── Role Carousel ── */
+    .role-carousel { position:relative; }
+
+    .role-card {
+      display:none;
+      padding:1.4rem 1.5rem;
+      background:rgba(255,255,255,.028);
+      border:1px solid var(--border);
+      border-radius:12px;
+      position:relative; overflow:hidden;
+      animation:roleIn .5s var(--ease-out) both;
+    }
+    .role-card.active { display:block; }
+    @keyframes roleIn {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .role-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    }
+    .role-card.role-scholar::before  { background:linear-gradient(90deg,#c9882a,transparent); }
+    .role-card.role-herald::before   { background:linear-gradient(90deg,#27ae60,transparent); }
+    .role-card.role-forgeborn::before{ background:linear-gradient(90deg,#e74c3c,transparent); }
+    .role-card.role-wanderer::before { background:linear-gradient(90deg,#5aaddd,transparent); }
+    .role-card.role-culinart::before { background:linear-gradient(90deg,#a06de0,transparent); }
+
+    .role-header {
+      display:flex; align-items:center; gap:.9rem; margin-bottom:1rem;
+    }
+    .role-emblem {
+      width:48px; height:48px; border-radius:10px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:1.4rem;
+    }
+    .role-card.role-scholar   .role-emblem { background:rgba(201,136,42,.12); border:1px solid rgba(201,136,42,.25); }
+    .role-card.role-herald    .role-emblem { background:rgba(39,174,96,.1);   border:1px solid rgba(39,174,96,.25); }
+    .role-card.role-forgeborn .role-emblem { background:rgba(231,76,60,.1);   border:1px solid rgba(231,76,60,.25); }
+    .role-card.role-wanderer  .role-emblem { background:rgba(90,173,221,.1);  border:1px solid rgba(90,173,221,.25); }
+    .role-card.role-culinart  .role-emblem { background:rgba(160,109,224,.1); border:1px solid rgba(160,109,224,.25); }
+
+    .role-name-wrap {}
+    .role-tag {
+      font-size:.56rem; font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+      margin-bottom:.2rem;
+    }
+    .role-card.role-scholar   .role-tag { color:#c9882a; }
+    .role-card.role-herald    .role-tag { color:#27ae60; }
+    .role-card.role-forgeborn .role-tag { color:#e74c3c; }
+    .role-card.role-wanderer  .role-tag { color:#5aaddd; }
+    .role-card.role-culinart  .role-tag { color:#a06de0; }
+
+    .role-name {
+      font-family:var(--font-display); font-size:1.25rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--txt); line-height:1;
+    }
+    .role-lore {
+      font-size:.82rem; color:var(--txt-sec); line-height:1.7; margin-bottom:1rem;
+      font-style:italic;
+    }
+    .role-perks {
+      display:flex; flex-wrap:wrap; gap:.4rem;
+    }
+    .perk {
+      font-size:.65rem; font-weight:600; letter-spacing:.06em;
+      padding:.22rem .6rem; border-radius:99px;
+      background:rgba(255,255,255,.05); border:1px solid var(--border);
+      color:var(--txt-sec);
+    }
+
+    .role-nav {
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:1rem;
+    }
+    .role-dots { display:flex; gap:.4rem; }
+    .role-dot {
+      width:5px; height:5px; border-radius:50%;
+      background:var(--border); cursor:pointer;
+      transition:background var(--dur-base) var(--ease-out),
+                 transform  var(--dur-fast) var(--ease-out);
+    }
+    .role-dot.active { background:var(--gold); transform:scale(1.4); }
+    .role-arrows { display:flex; gap:.4rem; }
+    .role-arr {
+      width:28px; height:28px; border-radius:6px;
+      background:var(--surf3); border:1px solid var(--border);
+      color:var(--txt-muted); cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:background var(--dur-fast),color var(--dur-fast),border-color var(--dur-fast);
+      font-size:.8rem;
+    }
+    .role-arr:hover { background:var(--surf2); border-color:var(--gold-dim); color:var(--gold); }
+
+    .left-bottom {
+      position:relative;z-index:1;
+      display:flex;gap:2rem; padding-top:2rem; border-top:1px solid var(--border);
+    }
+    .lstat-val{font-family:var(--font-data);font-size:1.4rem;font-weight:700;color:var(--gold-bright);letter-spacing:-.02em;line-height:1;}
+    .lstat-lbl{font-size:.6rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--txt-muted);margin-top:.3rem;}
+
+    /* ── RIGHT ── */
+    .right{display:flex;flex-direction:column;min-height:100dvh;background:var(--void);}
+    .r-header {
+      display:flex;align-items:center;justify-content:space-between;
+      padding:1.5rem 2rem; border-bottom:1px solid var(--border);
+    }
+    .r-header-logo {
+      display:none;
+      font-family:var(--font-display);font-size:.88rem;font-weight:700;
+      letter-spacing:.2em;text-transform:uppercase;color:var(--txt-sec);
+      align-items:center;gap:.5rem;user-select:none;
+    }
+    @media(max-width:900px){.r-header-logo{display:flex;}}
+    .r-header-right{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--txt-muted);margin-left:auto;}
+    .r-header-right a{font-weight:600;}
+    .r-body{flex:1;display:flex;align-items:center;justify-content:center;padding:3rem 2rem;}
+    .form-card{width:100%;max-width:420px;}
+
+    .form-title{font-family:var(--font-display);font-size:1.6rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);margin-bottom:.4rem;}
+    .form-sub{font-size:.85rem;color:var(--txt-muted);margin-bottom:2.25rem;}
+
+    /* step bar */
+    .step-bar{display:flex;align-items:center;gap:.35rem;margin-bottom:2.25rem;}
+    .seg{flex:1;height:3px;border-radius:99px;background:var(--surf3);transition:background var(--dur-base) var(--ease-out);}
+    .seg.done{background:var(--gold);}
+    .seg.active{background:var(--gold-bright);}
+
+    /* fields */
+    .field{margin-bottom:1.1rem;}
+    .field-lbl{display:flex;align-items:center;justify-content:space-between;font-size:.73rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-muted);margin-bottom:.44rem;}
+    .input-wrap{position:relative;}
+    .in-icon{position:absolute;top:50%;left:.9rem;transform:translateY(-50%);color:var(--txt-muted);pointer-events:none;display:flex;align-items:center;}
+    .in-sfx{position:absolute;top:50%;right:.9rem;transform:translateY(-50%);color:var(--txt-muted);display:flex;align-items:center;cursor:pointer;transition:color var(--dur-fast) var(--ease-out);}
+    .in-sfx:hover{color:var(--txt-sec);}
+    input[type="text"],input[type="email"],input[type="password"]{
+      width:100%;height:46px;
+      background:var(--surf2);border:1px solid var(--border);
+      border-radius:8px;padding:0 2.75rem;
+      font-size:.9rem;color:var(--txt);font-family:var(--font-body);
+      outline:none;
+      transition:border-color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out);
+    }
+    input::placeholder{color:var(--txt-muted);}
+    input:hover{border-color:#3a3a4a;}
+    input:focus{border-color:var(--gold-dim);box-shadow:0 0 0 3px rgba(201,136,42,.12);background:var(--surf3);}
+    input.error{border-color:var(--red);box-shadow:0 0 0 3px rgba(192,57,43,.12);}
+    input.valid{border-color:var(--green);}
+    .field-err{font-size:.73rem;color:var(--red-bright);margin-top:.38rem;display:none;align-items:center;gap:.35rem;}
+    .field-err.show{display:flex;}
+    .field-hint{font-size:.7rem;color:var(--txt-muted);margin-top:.38rem;}
+
+    /* pw strength */
+    .pw-bars{display:none;gap:.28rem;margin-top:.5rem;}
+    .pw-bars.show{display:flex;}
+    .pw-bar{flex:1;height:3px;border-radius:99px;background:var(--surf3);transition:background .28s var(--ease-out);}
+    .pw-bar.w{background:var(--red);} .pw-bar.m{background:var(--gold);} .pw-bar.s{background:var(--green-bright);}
+    .pw-lbl{font-size:.7rem;color:var(--txt-muted);margin-top:.3rem;display:none;}
+    .pw-lbl.show{display:block;}
+
+    /* check */
+    .check-row{display:flex;align-items:flex-start;gap:.65rem;margin-bottom:1.5rem;}
+    .chk{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border);background:var(--surf2);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:.15rem;transition:border-color var(--dur-fast) var(--ease-out),background var(--dur-fast) var(--ease-out);}
+    .chk.on{border-color:var(--gold);background:var(--gold-glow);}
+    .chk-lbl{font-size:.82rem;color:var(--txt-muted);line-height:1.55;}
+
+    /* submit */
+    .btn-submit{
+      width:100%;height:48px;
+      background:var(--gold);color:#07070b;
+      border:1px solid var(--gold);border-radius:8px;
+      font-size:.9rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+      cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.55rem;
+      font-family:var(--font-body);user-select:none;
+      transition:background var(--dur-fast) var(--ease-out),border-color var(--dur-fast) var(--ease-out),box-shadow var(--dur-fast) var(--ease-out),transform var(--dur-fast) var(--ease-out);
+    }
+    .btn-submit:hover{background:var(--gold-bright);border-color:var(--gold-bright);box-shadow:var(--glow-gold);}
+    .btn-submit:active{transform:scale(.98);}
+    .btn-submit:disabled{background:var(--surf3);border-color:var(--border);color:var(--txt-muted);cursor:not-allowed;box-shadow:none;}
+    .btn-submit.loading{pointer-events:none;}
+    .spinner{width:16px;height:16px;border:2px solid rgba(7,7,11,.3);border-top-color:#07070b;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+    .loading .spinner{display:block;} .loading .btn-text{display:none;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* alert */
+    .alert{display:none;align-items:flex-start;gap:.65rem;padding:.85rem 1rem;border-radius:8px;font-size:.83rem;line-height:1.5;margin-bottom:1.25rem;border:1px solid;}
+    .alert.show{display:flex;}
+    .alert--error{background:rgba(192,57,43,.08);border-color:rgba(192,57,43,.3);color:var(--red-bright);}
+    .alert--ok{background:rgba(39,174,96,.08);border-color:rgba(39,174,96,.3);color:var(--green-bright);}
+
+    .form-foot{margin-top:1.5rem;text-align:center;font-size:.8rem;color:var(--txt-muted);}
+    .r-footer{padding:1.25rem 2rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;}
+    .rf-links{display:flex;gap:1.5rem;list-style:none;}
+    .rf-links a{font-size:.72rem;color:var(--txt-muted);transition:color var(--dur-fast) var(--ease-out);}
+    .rf-links a:hover{color:var(--txt-sec);}
+    .rf-copy{font-size:.7rem;color:var(--txt-muted);}
+  </style>
+</head>
+<body>
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="left-grid" aria-hidden="true"></div>
+    <div class="left-glow"  aria-hidden="true"></div>
+    <div class="left-scan"  aria-hidden="true"></div>
+
+    <div class="left-top">
+      <a href="index.html" class="left-logo">
+        <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+          <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+          <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+          <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+        </svg>
+        VAELTHAR
+      </a>
+    </div>
+
+    <div class="left-body">
+      <div class="left-season">Choose Your Beginning</div>
+      <h2 class="left-heading">บทแรก<br/>ของ <em>ตำนาน</em><br/>เริ่มจากการเลือก</h2>
+
+      <div class="role-carousel">
+
+        <div class="role-card role-scholar active" data-role="0">
+          <div class="role-header">
+            <div class="role-emblem">📚</div>
+            <div class="role-name-wrap">
+              <div class="role-tag">Role I · Knowledge Path</div>
+              <div class="role-name">The Scholar</div>
+            </div>
+          </div>
+          <p class="role-lore">"ความรู้คือดาบที่คมที่สุด — และคุณขัดมันทุกวัน ไม่มีศัตรูใดที่ความเข้าใจโค่นไม่ได้"</p>
+          <div class="role-perks">
+            <span class="perk">📖 อ่านหนังสือ ×1.5 EXP</span>
+            <span class="perk">🎓 เรียน ×1.4 EXP</span>
+            <span class="perk">✍️ บันทึก ×1.2 EXP</span>
+          </div>
+        </div>
+
+        <div class="role-card role-herald" data-role="1">
+          <div class="role-header">
+            <div class="role-emblem">⚡</div>
+            <div class="role-name-wrap">
+              <div class="role-tag">Role II · Body Path</div>
+              <div class="role-name">The Herald</div>
+            </div>
+          </div>
+          <p class="role-lore">"ร่างกายคือวิหารของนักรบ คุณไม่ฝึกเพื่อชนะ คุณฝึกเพราะนั่นคือสิ่งที่คุณเป็น"</p>
+          <div class="role-perks">
+            <span class="perk">🏃 วิ่ง ×1.6 EXP</span>
+            <span class="perk">💪 ออกกำลัง ×1.5 EXP</span>
+            <span class="perk">🥗 กินคลีน ×1.2 EXP</span>
+          </div>
+        </div>
+
+        <div class="role-card role-forgeborn" data-role="2">
+          <div class="role-header">
+            <div class="role-emblem">🔨</div>
+            <div class="role-name-wrap">
+              <div class="role-tag">Role III · Craft Path</div>
+              <div class="role-name">The Forgeborn</div>
+            </div>
+          </div>
+          <p class="role-lore">"ในเตาหลอม ทุกอย่างถูกทดสอบ — เหล็กที่ไม่หัก ล้วนผ่านไฟมาก่อนทั้งนั้น"</p>
+          <div class="role-perks">
+            <span class="perk">🛠️ งาน DIY ×1.6 EXP</span>
+            <span class="perk">💻 Code ×1.4 EXP</span>
+            <span class="perk">🎨 สร้างสรรค์ ×1.3 EXP</span>
+          </div>
+        </div>
+
+        <div class="role-card role-wanderer" data-role="3">
+          <div class="role-header">
+            <div class="role-emblem">🧭</div>
+            <div class="role-name-wrap">
+              <div class="role-tag">Role IV · Explorer Path</div>
+              <div class="role-name">The Wanderer</div>
+            </div>
+          </div>
+          <p class="role-lore">"แผนที่ที่ดีที่สุดคือแผนที่ที่คุณวาดเอง ทุกก้าวใหม่คือตำนานที่ยังไม่มีใครเล่า"</p>
+          <div class="role-perks">
+            <span class="perk">🗺️ ออกเดินทาง ×1.6 EXP</span>
+            <span class="perk">📸 บันทึกช่วงเวลา ×1.3 EXP</span>
+            <span class="perk">🌿 ธรรมชาติ ×1.4 EXP</span>
+          </div>
+        </div>
+
+        <div class="role-card role-culinart" data-role="4">
+          <div class="role-header">
+            <div class="role-emblem">🍳</div>
+            <div class="role-name-wrap">
+              <div class="role-tag">Role V · Nourish Path</div>
+              <div class="role-name">The Culinart</div>
+            </div>
+          </div>
+          <p class="role-lore">"อาหารที่ทำด้วยมือคือเวทมนตร์ที่จับต้องได้ที่สุด — และคุณร่ายมนตร์ได้ทุกวัน"</p>
+          <div class="role-perks">
+            <span class="perk">🍽️ ทำอาหาร ×1.7 EXP</span>
+            <span class="perk">☕ ดูแลตัวเอง ×1.3 EXP</span>
+            <span class="perk">🛒 วางแผนมื้อ ×1.2 EXP</span>
+          </div>
+        </div>
+
+        <div class="role-nav">
+          <div class="role-dots">
+            <div class="role-dot active" data-i="0"></div>
+            <div class="role-dot" data-i="1"></div>
+            <div class="role-dot" data-i="2"></div>
+            <div class="role-dot" data-i="3"></div>
+            <div class="role-dot" data-i="4"></div>
+          </div>
+          <div class="role-arrows">
+            <button class="role-arr" id="rolePrev" aria-label="ก่อนหน้า">&#8592;</button>
+            <button class="role-arr" id="roleNext" aria-label="ถัดไป">&#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-bottom">
+      <div><div class="lstat-val">15</div><div class="lstat-lbl">Roles</div></div>
+      <div><div class="lstat-val">247</div><div class="lstat-lbl">Guild</div></div>
+      <div><div class="lstat-val">3,841</div><div class="lstat-lbl">ผู้เล่น</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <header class="r-header">
+      <a href="index.html" class="r-header-logo">
+        <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+          <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+          <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+          <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+          <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+        </svg>
+        VAELTHAR
+      </a>
+      <div class="r-header-right"><span>มีบัญชีแล้ว?</span><a href="login.html">เข้าสู่ระบบ</a></div>
+    </header>
+
+    <div class="r-body">
+      <div class="form-card">
+        <div class="form-title">สร้างบัญชี</div>
+        <div class="form-sub">เริ่ม Quest แรกของคุณภายใน 2 นาที</div>
+
+        <div class="step-bar">
+          <div class="seg active" id="s1"></div>
+          <div class="seg" id="s2"></div>
+          <div class="seg" id="s3"></div>
+          <div class="seg" id="s4"></div>
+        </div>
+
+        <div class="alert alert--error" id="alertBox" role="alert">
+          <span id="alertIcon"></span>
+          <span id="alertMsg">เกิดข้อผิดพลาด กรุณาลองใหม่</span>
+        </div>
+
+        <form id="regForm" novalidate autocomplete="off">
+
+          <div class="field">
+            <div class="field-lbl"><span>ชื่อผู้เล่น</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-name"></span>
+              <input type="text" id="displayName" placeholder="ชื่อที่แสดงในเกม" maxlength="32" autocomplete="off"/>
+            </div>
+            <div class="field-err" id="er-name"><span id="er-name-ic"></span><span id="er-name-msg">กรุณากรอกชื่อผู้เล่น</span></div>
+            <div class="field-hint">3–32 ตัวอักษร ไม่มีช่องว่าง</div>
+          </div>
+
+          <div class="field">
+            <div class="field-lbl"><span>Username</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-username"></span>
+              <input type="text" id="username" placeholder="ตัวพิมพ์เล็ก ตัวเลข หรือ _" maxlength="24" autocomplete="off"/>
+            </div>
+            <div class="field-err" id="er-username"><span id="er-username-ic"></span><span id="er-username-msg">กรุณากรอก Username ที่ถูกต้อง</span></div>
+            <div class="field-hint">3–24 ตัว ใช้ได้: a–z 0–9 _ (ไม่เปลี่ยนภายหลัง)</div>
+          </div>
+
+          <div class="field">
+            <div class="field-lbl"><span>อีเมล</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-email"></span>
+              <input type="email" id="email" placeholder="your@email.com" autocomplete="email"/>
+            </div>
+            <div class="field-err" id="er-email"><span id="er-email-ic"></span><span id="er-email-msg">กรุณากรอกอีเมลที่ถูกต้อง</span></div>
+          </div>
+
+          <div class="field">
+            <div class="field-lbl"><span>รหัสผ่าน</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-pw"></span>
+              <input type="password" id="password" placeholder="อย่างน้อย 8 ตัวอักษร" autocomplete="new-password"/>
+              <span class="in-sfx" id="togglePw"><span id="ic-eye"></span></span>
+            </div>
+            <div class="pw-bars" id="pwBars">
+              <div class="pw-bar" id="pb1"></div><div class="pw-bar" id="pb2"></div>
+              <div class="pw-bar" id="pb3"></div><div class="pw-bar" id="pb4"></div>
+            </div>
+            <div class="pw-lbl" id="pwLbl"></div>
+            <div class="field-err" id="er-pw"><span id="er-pw-ic"></span><span id="er-pw-msg">อย่างน้อย 8 ตัวอักษร</span></div>
+          </div>
+
+          <div class="field">
+            <div class="field-lbl"><span>ยืนยันรหัสผ่าน</span></div>
+            <div class="input-wrap">
+              <span class="in-icon" id="ic-pw2"></span>
+              <input type="password" id="passwordConfirm" placeholder="กรอกรหัสผ่านอีกครั้ง" autocomplete="new-password"/>
+            </div>
+            <div class="field-err" id="er-pw2"><span id="er-pw2-ic"></span><span id="er-pw2-msg">รหัสผ่านไม่ตรงกัน</span></div>
+          </div>
+
+          <div class="check-row">
+            <div class="chk" id="termsBox" role="checkbox" aria-checked="false" tabindex="0">
+              <span id="ic-check" style="display:none"></span>
+            </div>
+            <div class="chk-lbl">
+              ฉันได้อ่านและยอมรับ
+              <a href="terms.html" target="_blank">เงื่อนไขการใช้งาน</a>
+              และ<a href="privacy.html" target="_blank">นโยบายความเป็นส่วนตัว</a>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn" disabled>
+            <div class="spinner"></div>
+            <span class="btn-text"><span id="ic-btn"></span>สร้างบัญชี</span>
+          </button>
+        </form>
+
+        <div class="form-foot">มีบัญชีแล้ว? <a href="login.html">เข้าสู่ระบบ</a></div>
+      </div>
+    </div>
+
+    <footer class="r-footer">
+      <ul class="rf-links">
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="support.html">Support</a></li>
+      </ul>
+      <span class="rf-copy">© 2025 VAELTHAR</span>
+    </footer>
+  </div>
+
+  <script type="module">
+    import { icon } from '/js/ui/icons.js';
+
+    /* Role carousel */
+    const cards = document.querySelectorAll('.role-card');
+    const dots  = document.querySelectorAll('.role-dot');
+    let cur = 0, autoTimer;
+
+    function goTo(n) {
+      cards[cur].classList.remove('active');
+      dots[cur].classList.remove('active');
+      cur = (n + cards.length) % cards.length;
+      cards[cur].classList.add('active');
+      dots[cur].classList.add('active');
+    }
+
+    function startAuto() { autoTimer = setInterval(() => goTo(cur + 1), 4000); }
+    function stopAuto()  { clearInterval(autoTimer); }
+
+    document.getElementById('roleNext').addEventListener('click', () => { stopAuto(); goTo(cur + 1); startAuto(); });
+    document.getElementById('rolePrev').addEventListener('click', () => { stopAuto(); goTo(cur - 1); startAuto(); });
+    dots.forEach(d => d.addEventListener('click', () => { stopAuto(); goTo(+d.dataset.i); startAuto(); }));
+    startAuto();
+
+    document.getElementById('ic-name').innerHTML       = icon('badge',16);
+    document.getElementById('ic-username').innerHTML   = icon('profile',16);
+    document.getElementById('ic-email').innerHTML      = icon('mail',16);
+    document.getElementById('ic-pw').innerHTML         = icon('lock',16);
+    document.getElementById('ic-pw2').innerHTML        = icon('lock',16);
+    document.getElementById('ic-eye').innerHTML        = icon('eye',15);
+    document.getElementById('ic-check').innerHTML      = icon('check',12);
+    document.getElementById('ic-btn').innerHTML        = icon('exp',14);
+    document.getElementById('alertIcon').innerHTML     = icon('alert_circle',16);
+    ['name','username','email','pw','pw2'].forEach(k => {
+      const el = document.getElementById(`er-${k}-ic`);
+      if(el) el.innerHTML = icon('alert_circle',13);
+    });
+
+    /* pw toggle */
+    let vis=false;
+    document.getElementById('togglePw').addEventListener('click',()=>{
+      vis=!vis;
+      document.getElementById('password').type=vis?'text':'password';
+      document.getElementById('ic-eye').innerHTML=icon(vis?'eye_off':'eye',15);
+    });
+
+    /* pw strength */
+    const pwEl=document.getElementById('password');
+    const bars=['pb1','pb2','pb3','pb4'].map(id=>document.getElementById(id));
+    pwEl.addEventListener('input',()=>{
+      const v=pwEl.value;
+      if(!v){document.getElementById('pwBars').classList.remove('show');document.getElementById('pwLbl').classList.remove('show');return;}
+      document.getElementById('pwBars').classList.add('show');
+      document.getElementById('pwLbl').classList.add('show');
+      let s=0;
+      if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+      bars.forEach((b,i)=>{b.className='pw-bar';if(i<s)b.classList.add(s<=1?'w':s<=2?'m':'s');});
+      const lbl=document.getElementById('pwLbl');
+      lbl.textContent=['','อ่อน','พอใช้','แข็งแรง','แข็งแรงมาก'][s]||'';
+      lbl.style.color=['','var(--red-bright)','var(--gold)','var(--green-bright)','var(--green-bright)'][s];
+    });
+
+    /* terms */
+    let terms=false;
+    const tBox=document.getElementById('termsBox'),tChk=document.getElementById('ic-check'),sub=document.getElementById('submitBtn');
+    tBox.addEventListener('click',()=>{terms=!terms;tBox.classList.toggle('on',terms);tBox.setAttribute('aria-checked',terms);tChk.style.display=terms?'block':'none';sub.disabled=!terms;});
+    tBox.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();tBox.click();}});
+
+    /* validation */
+    const FIELD_MAP = {name:'displayName', username:'username', email:'email', pw:'password', pw2:'passwordConfirm'};
+    function showE(k,msg){const el=document.getElementById(`er-${k}`);if(msg)document.getElementById(`er-${k}-msg`).textContent=msg;el?.classList.add('show');document.getElementById(FIELD_MAP[k])?.classList.add('error');}
+    function clrE(k){document.getElementById(`er-${k}`)?.classList.remove('show');document.getElementById(FIELD_MAP[k])?.classList.remove('error');}
+    function markV(k){clrE(k);document.getElementById(FIELD_MAP[k])?.classList.add('valid');}
+    function showAlert(msg,type='error'){document.getElementById('alertMsg').textContent=msg;document.getElementById('alertBox').className=`alert alert--${type} show`;}
+    function hideAlert(){document.getElementById('alertBox').classList.remove('show');}
+
+    function upSteps(){
+      const n  = document.getElementById('displayName').classList.contains('valid');
+      const u  = document.getElementById('username').classList.contains('valid');
+      const e  = document.getElementById('email').classList.contains('valid');
+      const pw = document.getElementById('password').classList.contains('valid') &&
+                 document.getElementById('passwordConfirm').classList.contains('valid');
+      document.getElementById('s1').className = 'seg ' + (n       ? 'done' : 'active');
+      document.getElementById('s2').className = 'seg ' + (u       ? 'done' : n  ? 'active' : '');
+      document.getElementById('s3').className = 'seg ' + (e       ? 'done' : u  ? 'active' : '');
+      document.getElementById('s4').className = 'seg ' + (pw      ? 'done' : e  ? 'active' : '');
+    }
+
+    const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
+
+    document.getElementById('displayName').addEventListener('blur', function(){
+      const v = this.value.trim();
+      if (!v || v.length < 3)     return showE('name','ชื่อต้องมีอย่างน้อย 3 ตัวอักษร');
+      if (/\s/.test(v))           return showE('name','ห้ามมีช่องว่าง');
+      markV('name'); upSteps();
+    });
+    document.getElementById('username').addEventListener('blur', function(){
+      const v = this.value.trim().toLowerCase();
+      if (!USERNAME_RE.test(v))   return showE('username','3–24 ตัว ใช้ได้: a–z 0–9 _ เท่านั้น');
+      markV('username'); upSteps();
+    });
+    document.getElementById('email').addEventListener('blur', function(){
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.value.trim())) return showE('email');
+      markV('email'); upSteps();
+    });
+    document.getElementById('password').addEventListener('blur', function(){
+      if (this.value.length < 8)  return showE('pw');
+      markV('pw'); upSteps();
+    });
+    document.getElementById('passwordConfirm').addEventListener('blur', function(){
+      if (this.value !== document.getElementById('password').value) return showE('pw2');
+      markV('pw2'); upSteps();
+    });
+
+    document.getElementById('regForm').addEventListener('submit', async function(e){
+      e.preventDefault(); hideAlert();
+      const name     = document.getElementById('displayName').value.trim();
+      const uname    = document.getElementById('username').value.trim().toLowerCase();
+      const email    = document.getElementById('email').value.trim();
+      const pw       = document.getElementById('password').value;
+      const pw2      = document.getElementById('passwordConfirm').value;
+      let ok = true;
+      if (!name || name.length < 3 || /\s/.test(name))          { showE('name');     ok = false; }
+      if (!USERNAME_RE.test(uname))                              { showE('username'); ok = false; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))            { showE('email');    ok = false; }
+      if (pw.length < 8)                                         { showE('pw');       ok = false; }
+      if (pw !== pw2)                                            { showE('pw2');      ok = false; }
+      if (!terms) { showAlert('กรุณายอมรับเงื่อนไขการใช้งานก่อน'); ok = false; }
+      if (!ok) return;
+      sub.classList.add('loading');
+      try {
+        const { register } = await import('/js/core/auth.js');
+        await register(email, pw, name, uname);
+        window.location.href = 'onboarding.html';
+      } catch(err) {
+        const m = err?.message || '';
+        if (m.includes('already') || m.includes('duplicate') || m.includes('unique')) {
+          showAlert('อีเมลหรือ Username นี้ถูกใช้งานแล้ว');
+        } else {
+          showAlert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+        }
+        sub.classList.remove('loading');
+      }
+    });
+
+    try{const{requireGuest}=await import('/js/core/auth.js');await requireGuest();}catch{}
+  </script>
+</body>
+</html>
