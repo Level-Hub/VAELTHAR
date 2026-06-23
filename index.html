@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>VAELTHAR — Live the Quest</title>
+  <meta name="description" content="เปลี่ยนชีวิตจริงให้เป็น RPG — ทำ Quest รับ EXP เลื่อนเลเวล แข่งขันทั่วประเทศ" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void:         #0a0a0f;
+      --surf1:        #111118;
+      --surf2:        #18181f;
+      --surf3:        #22222c;
+      --border:       #2e2e3a;
+      --border-warm:  #3a3020;
+      --border-glow:  #4a3f2a;
+      --gold-dim:     #7a5c1e;
+      --gold:         #c9882a;
+      --gold-bright:  #f0b849;
+      --gold-glow:    rgba(201,136,42,.14);
+      --silver-dim:   #3a3a4a;
+      --silver:       #8a8aaa;
+      --silver-bright:#c2c2d8;
+      --red:          #c0392b;
+      --red-bright:   #e74c3c;
+      --green:        #1e7a4a;
+      --green-bright: #27ae60;
+      --blue-bright:  #2980b9;
+      --txt:          #e8e4d8;
+      --txt-sec:      #9a9098;
+      --txt-muted:    #5a5468;
+      --font-display: 'Cinzel', Georgia, serif;
+      --font-data:    'Rajdhani', monospace;
+      --font-body:    'Inter', system-ui, sans-serif;
+      --ease-out:     cubic-bezier(.16,1,.3,1);
+      --dur-fast:     120ms;
+      --dur-base:     240ms;
+      --glow-gold:    0 0 24px rgba(201,136,42,.5), 0 0 64px rgba(201,136,42,.16);
+      --glow-gold-sm: 0 0 10px rgba(201,136,42,.5);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,.7);
+      --shadow-xl:    0 24px 64px rgba(0,0,0,.75);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      background: var(--void);
+      color: var(--txt);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: var(--gold); text-decoration: none; outline: none; }
+    a:hover { color: var(--gold-bright); }
+    a:focus-visible { outline: 1px solid var(--gold-dim); outline-offset: 3px; border-radius: 3px; }
+    button { font-family: var(--font-body); cursor: pointer; border: none; background: none; outline: none; }
+    button:focus-visible { outline: 1px solid var(--gold-dim); outline-offset: 3px; border-radius: 3px; }
+    svg, img { display: block; }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--surf3); border-radius: 99px; }
+    ::selection { background: rgba(201,136,42,.18); color: var(--gold-bright); }
+
+    .logo-mark { width: 30px; height: 30px; flex-shrink: 0; }
+
+    /* ── NAV ── */
+    .nav {
+      position: fixed; inset: 0 0 auto 0; z-index: 200;
+      height: 60px; display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.25rem, 4vw, 3.5rem);
+      background: rgba(10,10,15,.88);
+      backdrop-filter: blur(18px) saturate(1.5);
+      border-bottom: 1px solid var(--border);
+      transition: border-color var(--dur-base) var(--ease-out);
+    }
+    .nav.scrolled { border-color: var(--border-warm); }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: .6rem;
+      font-family: var(--font-display);
+      font-size: 1.05rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--txt); user-select: none;
+    }
+    .nav-links {
+      display: flex; align-items: center; gap: 2.25rem; list-style: none;
+    }
+    .nav-links a {
+      font-size: .76rem; font-weight: 500; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--txt-muted);
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+    .nav-links a:hover { color: var(--txt); }
+    .nav-actions { display: flex; align-items: center; gap: .55rem; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-family: var(--font-body); font-weight: 600;
+      letter-spacing: .07em; text-transform: uppercase;
+      border-radius: 7px; border: 1px solid transparent;
+      cursor: pointer; white-space: nowrap; user-select: none;
+      transition:
+        background var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) var(--ease-out),
+        box-shadow var(--dur-fast) var(--ease-out),
+        color var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out);
+      font-size: .76rem; padding: .44rem 1.1rem;
+    }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--gold); color: #07070b; border-color: var(--gold); font-weight: 700; }
+    .btn-primary:hover { background: var(--gold-bright); border-color: var(--gold-bright); box-shadow: var(--glow-gold); color: #07070b; }
+    .btn-ghost { background: transparent; color: var(--txt-sec); }
+    .btn-ghost:hover { color: var(--txt); background: var(--surf2); }
+    .btn-outline { background: transparent; color: var(--txt-sec); border-color: var(--border); }
+    .btn-outline:hover { border-color: var(--gold-dim); color: var(--txt); background: rgba(201,136,42,.05); }
+    .btn--lg { font-size: .9rem; padding: .8rem 2rem; border-radius: 8px; }
+
+    .nav-burger {
+      display: none; width: 36px; height: 36px;
+      align-items: center; justify-content: center;
+      border-radius: 7px; background: var(--surf2);
+      border: 1px solid var(--border); color: var(--txt-sec);
+    }
+    @media(max-width:800px) {
+      .nav-links, .nav-actions { display: none; }
+      .nav-burger { display: flex; }
+    }
+
+    /* ── WRAP / SECTION ── */
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 3.5rem); }
+    .section { padding-block: clamp(5rem, 9vw, 8rem); }
+    .div-gold {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-warm) 30%, var(--border-warm) 70%, transparent);
+    }
+
+    /* ── REVEAL ── */
+    .r { opacity: 0; transform: translateY(22px); transition: opacity .6s var(--ease-out), transform .6s var(--ease-out); }
+    .r.in { opacity: 1; transform: none; }
+    .r1 { transition-delay: .09s; }
+    .r2 { transition-delay: .18s; }
+    .r3 { transition-delay: .27s; }
+    .r4 { transition-delay: .36s; }
+    .r5 { transition-delay: .45s; }
+    @media(prefers-reduced-motion:reduce) {
+      .r { animation: none; opacity: 1; transform: none; }
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO — ASYMMETRIC SPLIT
+    ═══════════════════════════════════════════ */
+    .hero {
+      min-height: 100dvh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: stretch;
+      padding-top: 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    @media(max-width:860px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+    }
+
+    /* shared bg */
+    .hero-bg {
+      position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(201,136,42,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,136,42,.05) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, black, transparent);
+    }
+    .hero-noise {
+      position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,.04) 3px, rgba(0,0,0,.04) 4px
+      );
+    }
+
+    /* LEFT — Chronicle */
+    .hero-left {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: clamp(3rem, 7vw, 6rem) clamp(2rem, 5vw, 4.5rem) clamp(3rem, 7vw, 6rem) clamp(1.5rem, 5vw, 4rem);
+      border-right: 1px solid var(--border);
+    }
+    @media(max-width:860px) {
+      .hero-left { border-right: none; border-bottom: 1px solid var(--border); padding: 3.5rem 1.5rem 3rem; }
+    }
+
+    .chronicle-eyebrow {
+      font-size: .62rem; font-weight: 600; letter-spacing: .24em;
+      text-transform: uppercase; color: var(--gold-dim);
+      margin-bottom: 2rem; user-select: none;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .chronicle-eyebrow::before {
+      content: '';
+      display: block; width: 28px; height: 1px; background: var(--gold-dim);
+    }
+
+    .chronicle-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5.25rem);
+      font-weight: 900;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      line-height: .96;
+      color: var(--txt);
+      margin-bottom: 1.6rem;
+      user-select: none;
+    }
+    .chronicle-title .accent { color: var(--gold-bright); text-shadow: var(--glow-gold); }
+    .chronicle-title .dim { color: var(--txt-muted); font-weight: 600; font-size: .48em; letter-spacing: .16em; display: block; margin-bottom: .2em; }
+
+    .chronicle-lore {
+      font-size: clamp(.88rem, 1.4vw, 1rem);
+      color: var(--txt-sec);
+      line-height: 1.85;
+      max-width: 440px;
+      margin-bottom: 2.5rem;
+      font-style: italic;
+      border-left: 2px solid var(--gold-dim);
+      padding-left: 1.25rem;
+    }
+    .chronicle-lore strong { color: var(--txt); font-style: normal; font-weight: 500; }
+
+    .hero-cta {
+      display: flex; gap: .85rem; flex-wrap: wrap; margin-bottom: 3.25rem;
+    }
+
+    .hero-metrics {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+    }
+    .metric-item {}
+    .metric-val {
+      font-family: var(--font-data); font-size: 1.55rem; font-weight: 700;
+      color: var(--gold-bright); letter-spacing: -.02em; line-height: 1;
+    }
+    .metric-lbl {
+      font-size: .6rem; font-weight: 500; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--txt-muted); margin-top: .28rem;
+    }
+    .metric-divider { width: 1px; background: var(--border); align-self: stretch; }
+
+    /* RIGHT — Live Role Card */
+    .hero-right {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: clamp(3rem, 6vw, 5rem) clamp(2rem, 5vw, 4rem);
+      background: rgba(17,17,24,.5);
+    }
+    @media(max-width:860px) {
+      .hero-right { padding: 3rem 1.5rem 4rem; }
+    }
+
+    .role-card-wrap { width: 100%; max-width: 340px; }
+
+    .role-card-label {
+      font-size: .6rem; font-weight: 600; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--txt-muted);
+      margin-bottom: 1.5rem; text-align: center;
+      user-select: none;
+    }
+
+    .role-card {
+      background: var(--surf1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      transition: border-color .4s var(--ease-out), box-shadow .4s var(--ease-out);
+    }
+    .role-card.animating { opacity: .5; transform: scale(.97); }
+    .role-card { transition: opacity .2s, transform .2s, border-color .4s var(--ease-out); }
+
+    .role-card-top {
+      padding: 2rem 2rem 1.5rem;
+      display: flex; align-items: flex-start; gap: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .role-card-icon {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid;
+      transition: background .4s, border-color .4s, color .4s;
+    }
+    .role-card-meta { flex: 1; min-width: 0; }
+    .role-card-class {
+      font-size: .58rem; font-weight: 600; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--txt-muted);
+      margin-bottom: .3rem; user-select: none;
+    }
+    .role-card-name {
+      font-family: var(--font-display);
+      font-size: 1.45rem; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--txt); line-height: 1.1;
+      transition: color .3s;
+    }
+    .role-card-focus {
+      font-size: .78rem; color: var(--txt-sec); margin-top: .35rem;
+      line-height: 1.5;
+    }
+
+    .role-card-body { padding: 1.25rem 2rem 1.75rem; }
+    .role-card-stat {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: .75rem;
+    }
+    .role-card-stat:last-child { margin-bottom: 0; }
+    .rcs-label { font-size: .7rem; color: var(--txt-muted); letter-spacing: .04em; }
+    .rcs-val {
+      font-family: var(--font-data); font-size: .8rem; font-weight: 600;
+      color: var(--txt-sec); letter-spacing: .05em;
+      transition: color .3s;
+    }
+    .rcs-bar {
+      height: 3px; background: var(--surf3); border-radius: 2px;
+      overflow: hidden; margin-top: .28rem;
+    }
+    .rcs-fill {
+      height: 100%; border-radius: 2px;
+      transition: width .6s var(--ease-out), background .4s;
+    }
+
+    .role-card-accent-bar {
+      height: 3px; width: 100%;
+      transition: background .4s var(--ease-out);
+    }
+
+    .role-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 1.5rem;
+    }
+    .role-nav-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surf2); border: 1px solid var(--border);
+      color: var(--txt-muted); cursor: pointer;
+      transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
+    }
+    .role-nav-btn:hover { background: var(--surf3); color: var(--txt); border-color: var(--border-glow); }
+    .role-dots {
+      display: flex; gap: 5px; align-items: center;
+    }
+    .role-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--surf3); transition: background .3s, width .3s;
+    }
+    .role-dot.active { background: var(--gold); width: 14px; border-radius: 3px; }
+
+    .role-auto-label {
+      font-size: .58rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--txt-muted); text-align: center; margin-top: 1rem;
+      user-select: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       STATEMENT SECTION — "ชีวิตคือ Quest"
+    ═══════════════════════════════════════════ */
+    .statement-section {
+      padding-block: clamp(4rem, 7vw, 6.5rem);
+      border-top: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .statement-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+    }
+    @media(max-width:720px) {
+      .statement-inner { grid-template-columns: 1fr; }
+    }
+    .statement-quote {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3.5vw, 2.75rem);
+      font-weight: 700; letter-spacing: .03em;
+      text-transform: uppercase; line-height: 1.15;
+      color: var(--txt);
+    }
+    .statement-quote .sq-gold { color: var(--gold-bright); }
+    .statement-quote .sq-dim { color: var(--txt-muted); }
+
+    .statement-right {}
+    .statement-steps { display: flex; flex-direction: column; gap: 0; }
+    .sstep {
+      display: grid; grid-template-columns: 48px 1fr;
+      gap: 1rem; align-items: start; padding: 1.35rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sstep:last-child { border-bottom: none; }
+    .sstep-n {
+      font-family: var(--font-data); font-size: 2.25rem; font-weight: 700;
+      color: var(--surf3); line-height: 1; letter-spacing: -.06em;
+      user-select: none; padding-top: .15rem;
+    }
+    .sstep-body {}
+    .sstep-title {
+      font-family: var(--font-display); font-size: .8rem; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--txt); margin-bottom: .45rem;
+    }
+    .sstep-desc { font-size: .86rem; color: var(--txt-sec); line-height: 1.7; }
+
+    /* ═══════════════════════════════════════════
+       DAY TIMELINE — "A Day in VAELTHAR"
+    ═══════════════════════════════════════════ */
+    .day-section {
+      background: var(--surf1);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding-block: clamp(4.5rem, 8vw, 7rem);
+      overflow: hidden;
+    }
+    .day-header { margin-bottom: 3.5rem; }
+    .day-eyebrow {
+      font-size: .62rem; font-weight: 600; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--gold-dim);
+      margin-bottom: .9rem; display: flex; align-items: center; gap: .65rem;
+      user-select: none;
+    }
+    .day-eyebrow-line { width: 24px; height: 1px; background: var(--gold-dim); }
+    .day-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.5rem);
+      font-weight: 700; letter-spacing: .04em;
+      text-transform: uppercase; color: var(--txt); line-height: 1.1;
+    }
+    .day-sub {
+      font-size: .9rem; color: var(--txt-sec); margin-top: .75rem;
+      max-width: 440px; line-height: 1.72;
+    }
+
+    /* horizontal scrollable timeline */
+    .day-scroll-track {
+      overflow-x: auto; overflow-y: visible;
+      scrollbar-width: none; cursor: grab;
+      padding-bottom: 1rem; margin: 0 -1.5rem; padding: 0 1.5rem 1rem;
+    }
+    .day-scroll-track::-webkit-scrollbar { display: none; }
+    .day-scroll-track.grabbing { cursor: grabbing; }
+
+    .day-timeline {
+      display: flex; gap: 0;
+      min-width: max-content;
+      position: relative;
+    }
+    /* spine line */
+    .day-timeline::before {
+      content: '';
+      position: absolute; top: 56px; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border) 5%, var(--border) 95%, transparent);
+      z-index: 0;
+    }
+
+    .day-event {
+      position: relative; z-index: 1;
+      width: 220px; flex-shrink: 0;
+      padding: 0 1.5rem;
+    }
+    .day-event:first-child { padding-left: 0; }
+    .day-event:last-child { padding-right: 0; }
+
+    .day-dot-row {
+      display: flex; align-items: center; margin-bottom: 1.5rem;
+      height: 112px; align-items: flex-end; padding-bottom: 0;
+      flex-direction: column; justify-content: flex-end;
+    }
+    /* time sits above dot */
+    .day-time {
+      font-family: var(--font-data); font-size: .72rem; font-weight: 600;
+      letter-spacing: .08em; color: var(--txt-muted);
+      margin-bottom: .6rem; text-align: center; width: 100%;
+      transition: color .3s;
+    }
+    .day-event:hover .day-time { color: var(--gold); }
+    .day-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--surf3); border: 2px solid var(--border);
+      flex-shrink: 0; align-self: center;
+      transition: background .3s, border-color .3s, box-shadow .3s;
+    }
+    .day-event:hover .day-dot { background: var(--gold); border-color: var(--gold); box-shadow: var(--glow-gold-sm); }
+    .day-event.active .day-dot { background: var(--gold-bright); border-color: var(--gold-bright); box-shadow: var(--glow-gold-sm); }
+
+    /* reflow dot row */
+    .day-dot-row { height: auto; flex-direction: row; align-items: center; gap: 0; }
+    .day-dot-col { display: flex; flex-direction: column; align-items: center; }
+
+    .day-card {
+      background: var(--surf2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.25rem 1.1rem;
+      transition: border-color .3s var(--ease-out), background .3s;
+    }
+    .day-event:hover .day-card { border-color: var(--gold-dim); background: var(--surf3); }
+
+    .day-period {
+      font-size: .58rem; font-weight: 600; letter-spacing: .18em;
+      text-transform: uppercase; margin-bottom: .5rem;
+      user-select: none;
+    }
+    .period--dawn    { color: #b088ff; }
+    .period--morning { color: var(--gold); }
+    .period--noon    { color: #ff9500; }
+    .period--evening { color: #ff6eb0; }
+    .period--night   { color: #4db8ff; }
+
+    .day-card-title {
+      font-family: var(--font-display);
+      font-size: .76rem; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--txt); margin-bottom: .45rem;
+      line-height: 1.3;
+    }
+    .day-card-desc { font-size: .75rem; color: var(--txt-sec); line-height: 1.62; }
+    .day-card-exp {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-family: var(--font-data); font-size: .68rem; font-weight: 700;
+      color: var(--gold-bright); letter-spacing: .06em;
+      background: rgba(201,136,42,.08); border: 1px solid var(--gold-dim);
+      border-radius: 4px; padding: 2px 7px; margin-top: .75rem;
+      user-select: none;
+    }
+
+    .day-scroll-hint {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .64rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--txt-muted); margin-top: 1.75rem;
+      user-select: none;
+    }
+    @media(max-width:640px) { .day-scroll-hint { display: flex; } }
+    @media(min-width:1200px) { .day-scroll-hint { display: none; } }
+
+    /* ═══════════════════════════════════════════
+       ROLES SECTION
+    ═══════════════════════════════════════════ */
+    .roles-shell { padding-block: clamp(5rem, 9vw, 8rem); }
+    .roles-header {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: end; gap: 1rem; margin-bottom: 3rem;
+    }
+    @media(max-width:640px) { .roles-header { grid-template-columns: 1fr; } }
+
+    .sec-eye {
+      display: flex; align-items: center; gap: .65rem;
+      font-size: .62rem; font-weight: 600; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--gold-dim); margin-bottom: .9rem;
+      user-select: none;
+    }
+    .sec-eye-line { width: 24px; height: 1px; background: var(--gold-dim); }
+    .sec-h {
+      font-family: var(--font-display);
+      font-size: clamp(1.8rem, 3.5vw, 2.9rem); font-weight: 700;
+      letter-spacing: .04em; text-transform: uppercase;
+      line-height: 1.1; color: var(--txt);
+    }
+    .sec-sub {
+      font-size: .92rem; color: var(--txt-sec); line-height: 1.78;
+      max-width: 460px; margin-top: .8rem;
+    }
+
+    .role-toggle {
+      display: flex; gap: 0;
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .rtoggle {
+      font-size: .72rem; font-weight: 600; letter-spacing: .08em;
+      text-transform: uppercase; padding: .44rem .9rem;
+      color: var(--txt-muted); background: transparent;
+      transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+      border: none; cursor: pointer; user-select: none;
+    }
+    .rtoggle.active { background: var(--surf3); color: var(--txt); }
+
+    .roles-grid {
+      display: grid; grid-template-columns: repeat(5,1fr);
+      gap: 1px; background: var(--border);
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    @media(max-width:900px) { .roles-grid { grid-template-columns: repeat(3,1fr); } }
+    @media(max-width:560px) { .roles-grid { grid-template-columns: repeat(2,1fr); } }
+
+    .role-tile {
+      background: var(--void); padding: 1.5rem 1.25rem;
+      transition: background var(--dur-base) var(--ease-out);
+      position: relative; overflow: hidden; cursor: default;
+    }
+    .role-tile:hover { background: var(--surf2); }
+    .role-tile::after {
+      content: ''; position: absolute; left: 0; right: 0; bottom: 0;
+      height: 2px; background: var(--rc,var(--gold));
+      opacity: 0; transition: opacity var(--dur-base) var(--ease-out);
+    }
+    .role-tile:hover::after { opacity: 1; }
+    .role-tile-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: .9rem; color: var(--rc,var(--gold));
+      background: color-mix(in srgb, var(--rc,var(--gold)) 11%, transparent);
+      border: 1px solid color-mix(in srgb, var(--rc,var(--gold)) 26%, transparent);
+    }
+    .role-tile-name {
+      font-family: var(--font-display); font-size: .7rem; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase;
+      color: var(--txt); margin-bottom: .3rem;
+    }
+    .role-tile-focus { font-size: .63rem; color: var(--txt-muted); line-height: 1.45; }
+    .role-bonus {
+      display: none; position: absolute; top: .7rem; right: .7rem;
+      font-family: var(--font-data); font-size: .6rem; font-weight: 700;
+      letter-spacing: .08em; color: var(--gold-bright);
+      background: rgba(201,136,42,.12); border: 1px solid var(--gold-dim);
+      border-radius: 4px; padding: 1px 5px; user-select: none;
+    }
+    .show-bonus .role-bonus { display: block; }
+
+    /* ═══════════════════════════════════════════
+       SEASON SECTION
+    ═══════════════════════════════════════════ */
+    .season-shell {
+      background: var(--surf1);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .season-inner {
+      display: grid; grid-template-columns: 1fr auto;
+      gap: 3rem; align-items: center;
+      padding-block: clamp(3.5rem, 6vw, 5.5rem);
+    }
+    @media(max-width:640px) { .season-inner { grid-template-columns: 1fr; gap: 2.25rem; } }
+    .season-eye {
+      font-size: .64rem; font-weight: 600; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--gold-dim); margin-bottom: .75rem; user-select: none;
+    }
+    .season-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.65rem, 3vw, 2.5rem);
+      font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+      color: var(--txt); margin-bottom: .75rem;
+    }
+    .season-desc { font-size: .9rem; color: var(--txt-sec); line-height: 1.74; max-width: 460px; }
+    .season-rewards { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .reward-tag {
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .68rem; font-weight: 600; letter-spacing: .06em;
+      color: var(--txt-sec); background: var(--surf2);
+      border: 1px solid var(--border); border-radius: 6px; padding: .28rem .65rem;
+    }
+    .reward-tag svg { color: var(--gold); }
+    .countdown { display: flex; align-items: center; gap: .65rem; flex-shrink: 0; }
+    .cd-unit { text-align: center; }
+    .cd-val {
+      font-family: var(--font-data); font-size: 2.75rem; font-weight: 700;
+      color: var(--gold-bright); letter-spacing: -.05em;
+      line-height: 1; text-shadow: var(--glow-gold-sm); user-select: none;
+    }
+    .cd-lbl {
+      font-size: .58rem; font-weight: 600; letter-spacing: .16em;
+      text-transform: uppercase; color: var(--txt-muted); margin-top: .32rem; user-select: none;
+    }
+    .cd-sep {
+      font-family: var(--font-data); font-size: 2rem; color: var(--gold-dim);
+      line-height: 1; margin-bottom: 1.15rem; flex-shrink: 0; user-select: none;
+    }
+
+    /* ═══════════════════════════════════════════
+       CTA
+    ═══════════════════════════════════════════ */
+    .cta-section {
+      text-align: center; padding-block: clamp(5.5rem,10vw,9rem);
+      position: relative; overflow: hidden;
+    }
+    .cta-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 900px; height: 560px;
+      background: radial-gradient(ellipse, rgba(201,136,42,.05) 0%, transparent 68%);
+      pointer-events: none;
+    }
+    .cta-eye {
+      font-size: .64rem; font-weight: 600; letter-spacing: .22em;
+      text-transform: uppercase; color: var(--gold-dim);
+      margin-bottom: 1.1rem; position: relative; user-select: none;
+    }
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5.5vw, 4rem); font-weight: 800;
+      letter-spacing: .04em; text-transform: uppercase; line-height: 1.06;
+      color: var(--txt); margin-bottom: 1.1rem; position: relative;
+    }
+    .cta-lore {
+      font-size: .95rem; color: var(--txt-sec);
+      margin-bottom: 2.75rem; line-height: 1.8; position: relative;
+      font-style: italic; max-width: 460px; margin-inline: auto;
+    }
+    .cta-actions {
+      display: flex; gap: .85rem; justify-content: center;
+      flex-wrap: wrap; position: relative;
+    }
+    .cta-note {
+      font-size: .7rem; color: var(--txt-muted);
+      margin-top: 1.25rem; letter-spacing: .04em; position: relative;
+    }
+
+    /* ── FOOTER ── */
+    .footer { border-top: 1px solid var(--border); }
+    .footer-top {
+      display: grid; grid-template-columns: 1fr auto;
+      align-items: start; gap: 3rem;
+      padding: 3rem clamp(1.25rem,4vw,3.5rem) 2rem;
+    }
+    @media(max-width:640px) { .footer-top { grid-template-columns: 1fr; gap: 2rem; } }
+    .footer-brand {
+      display: flex; align-items: center; gap: .6rem;
+      font-family: var(--font-display); font-size: .9rem; font-weight: 700;
+      letter-spacing: .2em; text-transform: uppercase;
+      color: var(--txt-muted); margin-bottom: .65rem;
+    }
+    .footer-tagline { font-size: .8rem; color: var(--txt-muted); line-height: 1.62; max-width: 280px; }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    @media(max-width:640px) { .footer-links { flex-wrap: wrap; gap: 1rem; } }
+    .footer-links a {
+      font-size: .78rem; color: var(--txt-muted);
+      transition: color var(--dur-fast) var(--ease-out);
+    }
+    .footer-links a:hover { color: var(--txt-sec); }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+      padding: 1.25rem clamp(1.25rem,4vw,3.5rem);
+      border-top: 1px solid var(--border);
+    }
+    .footer-copy { font-size: .72rem; color: var(--txt-muted); }
+    .footer-status {
+      display: flex; align-items: center; gap: .45rem;
+      font-size: .7rem; color: var(--txt-muted);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green-bright); box-shadow: 0 0 6px var(--green-bright);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <a href="/" class="nav-logo">
+      <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+        <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+        <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+        <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+        <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+        <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+      </svg>
+      VAELTHAR
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#how">วิธีเล่น</a></li>
+      <li><a href="#roles">Roles</a></li>
+      <li><a href="#day">A Day in the World</a></li>
+      <li><a href="ranking.html">Ranking</a></li>
+    </ul>
+
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-ghost">เข้าสู่ระบบ</a>
+      <a href="register.html" class="btn btn-primary">สมัครฟรี</a>
+    </div>
+
+    <button class="nav-burger" aria-label="เมนู">
+      <svg width="18" height="13" viewBox="0 0 18 13" fill="none">
+        <path d="M1 1h16M1 6.5h16M1 12h16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </nav>
+
+
+  <!-- ═══ HERO — ASYMMETRIC SPLIT ═══ -->
+  <section class="hero" id="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-grid"></div>
+      <div class="hero-noise"></div>
+    </div>
+
+    <!-- LEFT: Chronicle -->
+    <div class="hero-left">
+      <div class="chronicle-eyebrow r">Season I — Ember of the Ashlands</div>
+
+      <h1 class="chronicle-title r r1">
+        <span class="dim">ชีวิตจริง</span>
+        <em class="accent">คือ</em><br/>Quest
+      </h1>
+
+      <p class="chronicle-lore r r2">
+        ในโลกที่ <strong>กิจวัตรทุกอย่างมีความหมาย</strong> — การออกกำลังกายตอนเช้า,
+        หนังสือที่อ่านจนจบ, อาหารที่ปรุงด้วยมือ<br/>
+        ทุกสิ่งคือ EXP ที่สะสมสู่ชื่อบน Leaderboard ระดับประเทศ
+      </p>
+
+      <div class="hero-cta r r3">
+        <a href="register.html" class="btn btn-primary btn--lg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          เริ่มต้น — ฟรี
+        </a>
+        <a href="#day" class="btn btn-outline btn--lg">ดูชีวิตใน VAELTHAR</a>
+      </div>
+
+      <div class="hero-metrics r r4">
+        <div class="metric-item">
+          <div class="metric-val" id="c-players">—</div>
+          <div class="metric-lbl">ผู้เล่น</div>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-val" id="c-quests">—</div>
+          <div class="metric-lbl">Quest วันนี้</div>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-item">
+          <div class="metric-val" id="c-guilds">—</div>
+          <div class="metric-lbl">Guild</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Live Role Card -->
+    <div class="hero-right">
+      <div class="role-card-wrap">
+        <div class="role-card-label r">— Role ที่กำลังเล่นอยู่ใน VAELTHAR —</div>
+        <div class="role-card r r1" id="roleCard">
+          <div class="role-card-accent-bar" id="cardAccent"></div>
+          <div class="role-card-top">
+            <div class="role-card-icon" id="cardIcon"></div>
+            <div class="role-card-meta">
+              <div class="role-card-class">Active Role</div>
+              <div class="role-card-name" id="cardName">Scholar</div>
+              <div class="role-card-focus" id="cardFocus">อ่าน · เรียน · สรุป</div>
+            </div>
+          </div>
+          <div class="role-card-body">
+            <div class="role-card-stat">
+              <div>
+                <div class="rcs-label">EXP Bonus</div>
+                <div class="rcs-bar" style="width:120px"><div class="rcs-fill" id="cardExpBar" style="width:60%"></div></div>
+              </div>
+              <div class="rcs-val" id="cardExpVal">+0%</div>
+            </div>
+            <div class="role-card-stat">
+              <div>
+                <div class="rcs-label">Quest ประจำวัน</div>
+                <div class="rcs-bar" style="width:120px"><div class="rcs-fill" id="cardQuestBar" style="width:80%"></div></div>
+              </div>
+              <div class="rcs-val" id="cardQuestVal">4 ใบ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="role-nav r r2">
+          <button class="role-nav-btn" id="rolePrev" aria-label="Role ก่อนหน้า">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M15 18l-6-6 6-6"/>
+            </svg>
+          </button>
+          <div class="role-dots" id="roleDots"></div>
+          <button class="role-nav-btn" id="roleNext" aria-label="Role ถัดไป">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        <div class="role-auto-label r r3">สลับอัตโนมัติทุก 3 วินาที · 15 Roles</div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═══ STATEMENT — วิธีเล่น ═══ -->
+  <section class="statement-section section" id="how">
+    <div class="wrap">
+      <div class="statement-inner">
+        <div class="statement-quote r">
+          จาก<br/>
+          <span class="sq-dim">กิจวัตร</span><br/>
+          สู่<br/>
+          <span class="sq-gold">ตำนาน</span>
+        </div>
+
+        <div class="statement-right">
+          <div class="statement-steps">
+            <div class="sstep r r1">
+              <div class="sstep-n">01</div>
+              <div class="sstep-body">
+                <div class="sstep-title">เลือก Role ของคุณ</div>
+                <p class="sstep-desc">15 Role แต่ละอันมีธีมกิจกรรมต่างกัน — เลือกเองทุกสัปดาห์ หรือสุ่มทุกเที่ยงคืนเพื่อรับโบนัส EXP +25% โดยไม่รู้ล่วงหน้า</p>
+              </div>
+            </div>
+            <div class="sstep r r2">
+              <div class="sstep-n">02</div>
+              <div class="sstep-body">
+                <div class="sstep-title">ทำ Quest ในชีวิตจริง</div>
+                <p class="sstep-desc">Quest ปรับตาม Role ที่เลือก ทำกิจกรรม ยืนยันผล ชุมชนโหวตตรวจสอบ Approval &lt; 70% ตัด EXP อัตโนมัติ</p>
+              </div>
+            </div>
+            <div class="sstep r r3">
+              <div class="sstep-n">03</div>
+              <div class="sstep-body">
+                <div class="sstep-title">เลื่อนเลเวล แข่ง Ranking</div>
+                <p class="sstep-desc">สะสม EXP เลื่อนเลเวล ปลดล็อก Title และ Badge เข้า Guild แข่ง Ranking รายสัปดาห์ รายซีซัน ชิงตำแหน่ง Grand Champion</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="div-gold"></div>
+
+  <!-- ═══ DAY TIMELINE ═══ -->
+  <section class="day-section" id="day">
+    <div class="wrap">
+      <div class="day-header">
+        <div class="day-eyebrow r">
+          <span class="day-eyebrow-line"></span>
+          A Day in VAELTHAR
+        </div>
+        <h2 class="day-title r r1">หนึ่งวันในโลกที่<br/>ทุกชั่วโมงมีค่า</h2>
+        <p class="day-sub r r2">ตั้งแต่ตื่นนอนจนหัวหมอน — VAELTHAR บันทึกทุกสิ่งที่คุณทำให้กลายเป็น EXP</p>
+      </div>
+
+      <div class="day-scroll-track r r3" id="dayTrack">
+        <div class="day-timeline" id="dayTimeline">
+
+          <div class="day-event r r1">
+            <div class="day-dot-col">
+              <div class="day-time">05:30</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--dawn">Dawn</div>
+              <div class="day-card-title">Morning Run</div>
+              <p class="day-card-desc">Herald วิ่ง GPS ก่อนพระอาทิตย์ขึ้น ระยะทางและ Elevation ถูกบันทึกอัตโนมัติ</p>
+              <div class="day-card-exp">+120 EXP</div>
+            </div>
+          </div>
+
+          <div class="day-event r r2">
+            <div class="day-dot-col">
+              <div class="day-time">07:00</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--morning">Morning</div>
+              <div class="day-card-title">Quest Daily Check-in</div>
+              <p class="day-card-desc">Quest ประจำวันรีเซตแล้ว เลือก 3 ใบที่ตรงกับ Role Warlord วันนี้</p>
+              <div class="day-card-exp">Quest เปิดใหม่</div>
+            </div>
+          </div>
+
+          <div class="day-event r r3">
+            <div class="day-dot-col">
+              <div class="day-time">08:30</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--morning">Morning</div>
+              <div class="day-card-title">ทำอาหารเช้า</div>
+              <p class="day-card-desc">Culinart ถ่ายรูปมื้อเช้า Submit Quest ชุมชนโหวต Approval 94% ผ่านฉลุย</p>
+              <div class="day-card-exp">+85 EXP</div>
+            </div>
+          </div>
+
+          <div class="day-event r r4">
+            <div class="day-dot-col">
+              <div class="day-time">12:15</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--noon">Noon</div>
+              <div class="day-card-title">อ่านหนังสือ 30 นาที</div>
+              <p class="day-card-desc">Scholar Quest: สรุป 3 ประโยคที่ได้เรียนรู้ โพสต์ลง Feed แลก EXP พร้อม Streak Bonus</p>
+              <div class="day-card-exp">+65 EXP · Streak x3</div>
+            </div>
+          </div>
+
+          <div class="day-event r r5">
+            <div class="day-dot-col">
+              <div class="day-time">17:45</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--evening">Evening</div>
+              <div class="day-card-title">Guild War — PvP</div>
+              <p class="day-card-desc">Guild ยึดพื้นที่ GPS Zone ใหม่ EXP แบ่งตามส่วนร่วม — คน Submit Quest ได้มากที่สุด</p>
+              <div class="day-card-exp">+200 EXP (Guild)</div>
+            </div>
+          </div>
+
+          <div class="day-event r">
+            <div class="day-dot-col">
+              <div class="day-time">21:00</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--night">Night</div>
+              <div class="day-card-title">Daily Summary</div>
+              <p class="day-card-desc">EXP วันนี้รวม บน Ranking เลื่อนขึ้น 2 อันดับ Mood Log บันทึกว่าวันนี้ "ดีมาก"</p>
+              <div class="day-card-exp">+470 EXP รวม</div>
+            </div>
+          </div>
+
+          <div class="day-event r">
+            <div class="day-dot-col">
+              <div class="day-time">23:59</div>
+              <div class="day-dot"></div>
+            </div>
+            <div style="height:.9rem"></div>
+            <div class="day-card">
+              <div class="day-period period--night">Midnight</div>
+              <div class="day-card-title">Role สุ่มใหม่</div>
+              <p class="day-card-desc">ถ้าเลือก Random Mode — เที่ยงคืนระบบสุ่ม Role ใหม่ พร้อม Bonus +25% EXP รอพรุ่งนี้</p>
+              <div class="day-card-exp">+25% EXP พรุ่งนี้</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="day-scroll-hint r">
+        <svg width="14" height="10" viewBox="0 0 14 10" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+          <path d="M1 5h12M8 1l4 4-4 4"/>
+        </svg>
+        เลื่อนดูทั้งวัน
+      </div>
+    </div>
+  </section>
+
+  <div class="div-gold"></div>
+
+  <!-- ═══ ROLES ═══ -->
+  <section class="roles-shell" id="roles">
+    <div class="wrap">
+      <div class="roles-header r">
+        <div>
+          <div class="sec-eye"><span class="sec-eye-line"></span>15 Roles</div>
+          <h2 class="sec-h">เลือก Role<br/>หรือให้โชคชะตาเลือก</h2>
+          <p class="sec-sub">สุ่มทุกเที่ยงคืน รับโบนัส +25% EXP หรือเลือกเองทุกต้นสัปดาห์เพื่อวางแผนให้เต็มที่</p>
+        </div>
+        <div class="role-toggle" id="modeToggle">
+          <button class="rtoggle active" data-mode="choose">Choose</button>
+          <button class="rtoggle" data-mode="random">Random</button>
+        </div>
+      </div>
+      <div class="roles-grid r r1" id="rolesGrid"></div>
+    </div>
+  </section>
+
+  <div class="div-gold"></div>
+
+  <!-- ═══ SEASON ═══ -->
+  <section class="season-shell">
+    <div class="wrap">
+      <div class="season-inner">
+        <div class="r">
+          <div class="season-eye">Season I — กำลังดำเนินอยู่</div>
+          <div class="season-title">Ember of<br/>the Ashlands</div>
+          <p class="season-desc">Season แรกของ VAELTHAR — แข่งขัน สะสม EXP ปิดซีซันด้วยตำแหน่ง Grand Champion ที่มีเพียงคนเดียวในประวัติศาสตร์</p>
+          <div class="season-rewards">
+            <div class="reward-tag">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20h20M4 20l2-8 6 5 6-5 2 8"/><circle cx="4" cy="10" r="1.5" fill="currentColor"/><circle cx="12" cy="7" r="1.5" fill="currentColor"/><circle cx="20" cy="10" r="1.5" fill="currentColor"/>
+              </svg>
+              Grand Champion Title
+            </div>
+            <div class="reward-tag">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              EXP Carry Bonus
+            </div>
+            <div class="reward-tag">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="5" r="2"/><path d="M12 7v1"/><path d="M8 9h8l1 2-2 2v4l-3 2-3-2v-4L7 11z"/>
+              </svg>
+              Exclusive Frame
+            </div>
+          </div>
+        </div>
+        <div class="countdown r r1">
+          <div class="cd-unit"><div class="cd-val" id="cd-d">--</div><div class="cd-lbl">วัน</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-val" id="cd-h">--</div><div class="cd-lbl">ชั่วโมง</div></div>
+          <div class="cd-sep">:</div>
+          <div class="cd-unit"><div class="cd-val" id="cd-m">--</div><div class="cd-lbl">นาที</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CTA ═══ -->
+  <section class="cta-section">
+    <div class="cta-glow" aria-hidden="true"></div>
+    <div class="wrap" style="position:relative">
+      <div class="cta-eye r">เริ่มต้นบทแรก</div>
+      <h2 class="cta-title r r1">Quest ของคุณ<br/>รอแกเปิดหน้าแรก</h2>
+      <p class="cta-lore r r2">"นักรบทุกคนเริ่มต้นจากการตัดสินใจในคืนหนึ่ง<br/>ว่าชีวิตที่เหลือจะไม่ธรรมดาอีกต่อไป"</p>
+      <div class="cta-actions r r3">
+        <a href="register.html" class="btn btn-primary btn--lg">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+          สร้างบัญชี — ฟรี
+        </a>
+        <a href="login.html" class="btn btn-outline btn--lg">เข้าสู่ระบบ</a>
+      </div>
+      <p class="cta-note r r4">ไม่ต้องใส่ข้อมูลบัตรเครดิต &nbsp;·&nbsp; เล่นได้ทุกอุปกรณ์</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top wrap">
+      <div>
+        <div class="footer-brand">
+          <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="#c9882a" aria-hidden="true">
+            <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+            <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+            <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+            <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+            <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+            <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+            <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="50" cy="68" r="3" fill="#c9882a" stroke="none"/>
+          </svg>
+          VAELTHAR
+        </div>
+        <p class="footer-tagline">แพลตฟอร์ม RPG ที่เชื่อมชีวิตจริงกับโลกเกม<br/>Season I: Ember of the Ashlands</p>
+      </div>
+      <ul class="footer-links">
+        <li><a href="terms.html">Terms</a></li>
+        <li><a href="privacy.html">Privacy</a></li>
+        <li><a href="support.html">Support</a></li>
+        <li><a href="blacklist.html">Blacklist</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom wrap">
+      <span class="footer-copy">© 2025 VAELTHAR. All rights reserved.</span>
+      <div class="footer-status"><div class="status-dot"></div>All systems operational</div>
+    </div>
+  </footer>
+
+
+  <script type="module">
+    import { icon } from '/js/ui/icons.js';
+
+    /* ─── ROLES DATA ─── */
+    const ROLES = [
+      { key:'scholar',    name:'Scholar',    focus:'อ่าน · เรียน · สรุป',          rc:'#7b68ee', quests:4, expBonus:0 },
+      { key:'warlord',    name:'Warlord',    focus:'ออกกำลังกาย · ฝึกร่างกาย',    rc:'#e74c3c', quests:5, expBonus:0 },
+      { key:'warden',     name:'Warden',     focus:'รักษ์โลก · ความยั่งยืน',      rc:'#27ae60', quests:3, expBonus:0 },
+      { key:'culinart',   name:'Culinart',   focus:'ทำอาหาร · ทำขนม',             rc:'#e67e22', quests:4, expBonus:0 },
+      { key:'artisan',    name:'Artisan',    focus:'วาดภาพ · สร้างสรรค์',          rc:'#9b59b6', quests:3, expBonus:0 },
+      { key:'merchant',   name:'Merchant',   focus:'หาเงิน · ออมทรัพย์',          rc:'#f1c40f', quests:3, expBonus:0 },
+      { key:'envoy',      name:'Envoy',      focus:'ช่วยเหลือผู้อื่น',            rc:'#1abc9c', quests:3, expBonus:0 },
+      { key:'ascetic',    name:'Ascetic',    focus:'สมาธิ · Mindfulness',          rc:'#bdc3c7', quests:3, expBonus:0 },
+      { key:'pathfinder', name:'Pathfinder', focus:'สำรวจ · สถานที่ใหม่',         rc:'#d35400', quests:5, expBonus:0 },
+      { key:'chronicler', name:'Chronicler', focus:'ถ่ายรูป · บันทึกเรื่องราว',   rc:'#3498db', quests:4, expBonus:0 },
+      { key:'forgemaster',name:'Forgemaster',focus:'ซ่อมแซม · สร้างสิ่งของ',      rc:'#7f8c8d', quests:3, expBonus:0 },
+      { key:'bard',       name:'Bard',       focus:'ดนตรี · แต่งเพลง',            rc:'#e91e8c', quests:3, expBonus:0 },
+      { key:'sage',       name:'Sage',       focus:'สอนผู้อื่น · แบ่งปันความรู้', rc:'#f39c12', quests:4, expBonus:0 },
+      { key:'herald',     name:'Herald',     focus:'วิ่ง · GPS Tracking',          rc:'#00bcd4', quests:5, expBonus:0 },
+      { key:'paladin',    name:'Paladin',    focus:'บริการสังคม · ชุมชน',         rc:'#c9882a', quests:4, expBonus:0 },
+    ];
+
+    /* ─── HERO ROLE CARD ─── */
+    let curRole = 0;
+    let autoTimer = null;
+
+    const cardAccent   = document.getElementById('cardAccent');
+    const cardIcon     = document.getElementById('cardIcon');
+    const cardName     = document.getElementById('cardName');
+    const cardFocus    = document.getElementById('cardFocus');
+    const cardExpBar   = document.getElementById('cardExpBar');
+    const cardExpVal   = document.getElementById('cardExpVal');
+    const cardQuestBar = document.getElementById('cardQuestBar');
+    const cardQuestVal = document.getElementById('cardQuestVal');
+    const roleCard     = document.getElementById('roleCard');
+    const dotsEl       = document.getElementById('roleDots');
+
+    // build dots
+    ROLES.forEach((_, i) => {
+      const d = document.createElement('div');
+      d.className = 'role-dot' + (i===0 ? ' active' : '');
+      dotsEl.appendChild(d);
+    });
+
+    function showRole(i, dir = 1) {
+      const r = ROLES[i];
+      roleCard.style.opacity = '0';
+      roleCard.style.transform = `scale(.96) translateX(${dir * 14}px)`;
+      setTimeout(() => {
+        cardAccent.style.background = r.rc;
+        cardIcon.innerHTML = icon(r.key, 22);
+        cardIcon.style.color = r.rc;
+        cardIcon.style.background = `color-mix(in srgb, ${r.rc} 12%, transparent)`;
+        cardIcon.style.borderColor = `color-mix(in srgb, ${r.rc} 28%, transparent)`;
+        cardName.textContent = r.name;
+        cardName.style.color = r.rc;
+        cardFocus.textContent = r.focus;
+        const bonus = 25; // random mode shows +25%; choose shows 0
+        cardExpVal.textContent = '+0%';
+        cardExpBar.style.width = '30%';
+        cardExpBar.style.background = r.rc;
+        const qpct = Math.round((r.quests / 5) * 100);
+        cardQuestBar.style.width = qpct + '%';
+        cardQuestBar.style.background = r.rc;
+        cardQuestVal.textContent = r.quests + ' ใบ';
+        // dots
+        document.querySelectorAll('.role-dot').forEach((d,j) => d.classList.toggle('active', j===i));
+        roleCard.style.transition = 'opacity .3s, transform .35s cubic-bezier(.16,1,.3,1)';
+        roleCard.style.opacity = '1';
+        roleCard.style.transform = 'none';
+      }, 160);
+    }
+
+    showRole(0);
+
+    function next() { curRole = (curRole + 1) % ROLES.length; showRole(curRole, 1); }
+    function prev() { curRole = (curRole - 1 + ROLES.length) % ROLES.length; showRole(curRole, -1); }
+
+    document.getElementById('roleNext').addEventListener('click', () => { clearInterval(autoTimer); next(); autoTimer = setInterval(next, 3000); });
+    document.getElementById('rolePrev').addEventListener('click', () => { clearInterval(autoTimer); prev(); autoTimer = setInterval(next, 3000); });
+
+    autoTimer = setInterval(next, 3000);
+
+    /* ─── ROLES GRID ─── */
+    const grid = document.getElementById('rolesGrid');
+    function renderRoles(bonus) {
+      grid.innerHTML = ROLES.map(r => `
+        <div class="role-tile${bonus?' show-bonus':''}" style="--rc:${r.rc}">
+          <div class="role-bonus">+25% EXP</div>
+          <div class="role-tile-icon">${icon(r.key,18)}</div>
+          <div class="role-tile-name">${r.name}</div>
+          <div class="role-tile-focus">${r.focus}</div>
+        </div>`).join('');
+    }
+    renderRoles(false);
+    document.querySelectorAll('.rtoggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rtoggle').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderRoles(btn.dataset.mode === 'random');
+      });
+    });
+
+    /* ─── NAV SCROLL ─── */
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 12), {passive:true});
+
+    /* ─── COUNTERS ─── */
+    function counter(el, target, dur=1900) {
+      const s = performance.now();
+      const go = n => {
+        const p = Math.min((n-s)/dur,1), e = 1-Math.pow(1-p,3);
+        el.textContent = Math.round(e*target).toLocaleString();
+        if(p<1) requestAnimationFrame(go);
+      };
+      requestAnimationFrame(go);
+    }
+    const mo = new IntersectionObserver(en => {
+      if(en[0].isIntersecting){
+        counter(document.getElementById('c-players'),3841);
+        counter(document.getElementById('c-quests'),12056);
+        counter(document.getElementById('c-guilds'),247);
+        mo.disconnect();
+      }
+    },{threshold:.5});
+    mo.observe(document.querySelector('.hero-metrics'));
+
+    /* ─── COUNTDOWN ─── */
+    const end = new Date(); end.setDate(end.getDate()+82); end.setHours(0,0,0,0);
+    function tick(){
+      const diff=end-Date.now(), pad=n=>String(Math.max(0,n)).padStart(2,'0');
+      document.getElementById('cd-d').textContent=pad(Math.floor(diff/86400000));
+      document.getElementById('cd-h').textContent=pad(Math.floor(diff%86400000/3600000));
+      document.getElementById('cd-m').textContent=pad(Math.floor(diff%3600000/60000));
+    }
+    tick(); setInterval(tick,30000);
+
+    /* ─── DAY TIMELINE drag scroll ─── */
+    const track = document.getElementById('dayTrack');
+    let isDown = false, startX, scrollLeft;
+    track.addEventListener('mousedown', e => { isDown=true; track.classList.add('grabbing'); startX=e.pageX-track.offsetLeft; scrollLeft=track.scrollLeft; });
+    track.addEventListener('mouseleave', () => { isDown=false; track.classList.remove('grabbing'); });
+    track.addEventListener('mouseup',   () => { isDown=false; track.classList.remove('grabbing'); });
+    track.addEventListener('mousemove', e => { if(!isDown) return; e.preventDefault(); const x=e.pageX-track.offsetLeft; const walk=(x-startX)*1.3; track.scrollLeft=scrollLeft-walk; });
+
+    /* ─── REVEAL ─── */
+    const ro = new IntersectionObserver(en => {
+      en.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });
+    },{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+    document.querySelectorAll('.r').forEach(el => ro.observe(el));
+  </script>
+</body>
+</html>

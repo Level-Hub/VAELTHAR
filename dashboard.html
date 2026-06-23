@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Command Post — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --void:        #0a0a0f;
+      --surf1:       #111118;
+      --surf2:       #18181f;
+      --surf3:       #22222c;
+      --border:      #2e2e3a;
+      --border-glow: #4a3f2a;
+
+      --gold-dim:    #7a5c1e;
+      --gold:        #c9882a;
+      --gold-bright: #f0b849;
+      --gold-glow:   rgba(201,136,42,.16);
+
+      --red:         #c0392b;
+      --red-bright:  #e74c3c;
+      --green:       #1e7a4a;
+      --green-bright:#27ae60;
+      --blue:        #1a3a6e;
+      --blue-bright: #2980b9;
+
+      --txt:         #e8e4d8;
+      --txt-sec:     #9a9098;
+      --txt-muted:   #5a5468;
+      --txt-gold:    #f0b849;
+
+      --font-display:'Cinzel',Georgia,serif;
+      --font-data:   'Rajdhani','Courier New',monospace;
+      --font-body:   'Inter',system-ui,sans-serif;
+
+      --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 18px; --r-pill: 999px;
+
+      --ease-out:    cubic-bezier(.16,1,.3,1);
+      --dur-fast:    120ms;
+      --dur-base:    240ms;
+      --dur-slow:    380ms;
+
+      --glow-gold:   0 0 16px rgba(201,136,42,.5), 0 0 48px rgba(201,136,42,.15);
+      --glow-gold-sm:0 0 8px rgba(201,136,42,.45);
+      --glow-green:  0 0 8px rgba(39,174,96,.5);
+
+      --sidebar-w: 240px;
+      --sidebar-collapsed: 64px;
+    }
+
+    /* ── RESET ──────────────────────────────────────────────── */
+    *,*::before,*::after {
+      box-sizing:border-box; margin:0; padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    html { font-size:16px; scroll-behavior:smooth; }
+    body {
+      background:var(--void);
+      color:var(--txt);
+      font-family:var(--font-body);
+      font-size:.9375rem;
+      line-height:1.6;
+      min-height:100dvh;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+    }
+    img,svg { display:block; max-width:100%; }
+    a { color:var(--gold); text-decoration:none; }
+    button { font-family:var(--font-body); cursor:pointer; border:none; background:none; }
+    :focus-visible { outline:2px solid var(--gold); outline-offset:3px; border-radius:var(--r-sm); }
+
+    /* ── LAYOUT ─────────────────────────────────────────────── */
+    #sidebar-root { flex-shrink:0; }
+
+    .main-content {
+      flex:1;
+      margin-left:var(--sidebar-w);
+      padding:2rem 2rem 4rem;
+      max-width:1200px;
+      transition:margin-left var(--dur-base) var(--ease-out);
+    }
+    .main-content.sidebar-collapsed { margin-left:var(--sidebar-collapsed); }
+
+    /* ── PAGE HEADER ─────────────────────────────────────────── */
+    .page-header {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:2rem;
+    }
+    .page-header-left {}
+    .page-label {
+      font-family:var(--font-display);
+      font-size:.6875rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+      margin-bottom:.25rem;
+    }
+    .page-title {
+      font-family:var(--font-display);
+      font-size:1.5rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--txt);
+    }
+    .page-date {
+      font-family:var(--font-data);
+      font-size:.8125rem;
+      color:var(--txt-muted);
+      letter-spacing:.04em;
+    }
+
+    /* ── HERO ZONE ───────────────────────────────────────────── */
+    .hero-zone {
+      position:relative;
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.75rem 2rem;
+      margin-bottom:1.75rem;
+      overflow:hidden;
+    }
+    /* Decorative corner rune */
+    .hero-zone::before {
+      content:'';
+      position:absolute;
+      top:0; right:0;
+      width:160px; height:160px;
+      background:radial-gradient(circle at top right, rgba(201,136,42,.08) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .hero-zone::after {
+      content:'';
+      position:absolute;
+      bottom:-1px; left:0; right:0; height:1px;
+      background:linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .hero-inner {
+      display:flex;
+      align-items:center;
+      gap:1.5rem;
+    }
+
+    /* Avatar */
+    .hero-avatar-wrap { position:relative; flex-shrink:0; }
+    .hero-avatar {
+      width:80px; height:80px;
+      border-radius:50%;
+      background:var(--surf3);
+      border:2px solid var(--border-glow);
+      box-shadow:var(--glow-gold-sm);
+      object-fit:cover;
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+    }
+    .hero-avatar svg { opacity:.4; }
+    .online-dot {
+      position:absolute;
+      bottom:4px; right:4px;
+      width:12px; height:12px;
+      border-radius:50%;
+      background:var(--green-bright);
+      box-shadow:var(--glow-green);
+      border:2px solid var(--void);
+    }
+
+    /* Hero Info */
+    .hero-info { flex:1; min-width:0; }
+    .hero-name {
+      font-family:var(--font-display);
+      font-size:1.4rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      color:var(--txt);
+      margin-bottom:.2rem;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .hero-role-row {
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      margin-bottom:.9rem;
+    }
+    .role-badge {
+      display:inline-flex;
+      align-items:center;
+      gap:.35rem;
+      font-family:var(--font-data);
+      font-size:.75rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      padding:.25rem .65rem;
+      border-radius:var(--r-pill);
+      background:rgba(201,136,42,.12);
+      border:1px solid var(--gold-dim);
+      color:var(--gold-bright);
+    }
+    .role-badge svg { color:var(--gold-bright); }
+    .mode-tag {
+      font-size:.6875rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      color:var(--txt-muted);
+      background:var(--surf3);
+      border:1px solid var(--border);
+      border-radius:var(--r-pill);
+      padding:.15rem .5rem;
+    }
+
+    /* EXP Bar */
+    .exp-section {}
+    .exp-meta {
+      display:flex;
+      align-items:baseline;
+      justify-content:space-between;
+      margin-bottom:.45rem;
+    }
+    .exp-level {
+      font-family:var(--font-data);
+      font-size:1.5rem;
+      font-weight:700;
+      color:var(--gold-bright);
+      letter-spacing:-.02em;
+      line-height:1;
+    }
+    .exp-level span {
+      font-size:.75rem;
+      font-weight:500;
+      color:var(--txt-muted);
+      letter-spacing:.06em;
+      margin-left:.25rem;
+    }
+    .exp-numbers {
+      font-family:var(--font-data);
+      font-size:.8125rem;
+      color:var(--txt-sec);
+    }
+    .exp-numbers strong { color:var(--gold); font-weight:600; }
+    .exp-track {
+      width:100%;
+      height:7px;
+      background:var(--surf3);
+      border-radius:var(--r-pill);
+      overflow:hidden;
+    }
+    .exp-fill {
+      height:100%;
+      background:linear-gradient(90deg, var(--gold), var(--gold-bright));
+      border-radius:var(--r-pill);
+      box-shadow:0 0 8px rgba(201,136,42,.5);
+      transition:width .8s var(--ease-out);
+    }
+
+    /* Inline Stats Row */
+    .hero-stats-row {
+      display:flex;
+      gap:1.5rem;
+      margin-top:1.25rem;
+      padding-top:1.25rem;
+      border-top:1px solid var(--border);
+      flex-wrap:wrap;
+    }
+    .stat-item {
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+    }
+    .stat-item svg { color:var(--txt-muted); flex-shrink:0; }
+    .stat-val {
+      font-family:var(--font-data);
+      font-size:1.0625rem;
+      font-weight:700;
+      color:var(--txt);
+      letter-spacing:-.01em;
+      line-height:1;
+    }
+    .stat-lbl {
+      font-size:.6875rem;
+      color:var(--txt-muted);
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+
+    /* ── GRID LAYOUT ─────────────────────────────────────────── */
+    .dashboard-grid {
+      display:grid;
+      grid-template-columns:1fr 340px;
+      gap:1.25rem;
+      align-items:start;
+    }
+
+    /* ── SECTION TITLE ───────────────────────────────────────── */
+    .section-head {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:1rem;
+    }
+    .section-title {
+      display:flex;
+      align-items:center;
+      gap:.6rem;
+      font-family:var(--font-display);
+      font-size:.8125rem;
+      font-weight:600;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      color:var(--txt-sec);
+    }
+    .section-title svg { color:var(--gold-dim); }
+    .section-link {
+      font-size:.75rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      color:var(--txt-muted);
+      text-transform:uppercase;
+      display:flex;
+      align-items:center;
+      gap:.3rem;
+      transition:color var(--dur-fast) var(--ease-out);
+    }
+    .section-link:hover { color:var(--gold); }
+
+    /* ── QUEST LOG ───────────────────────────────────────────── */
+    .quest-log {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.5rem;
+      margin-bottom:1.25rem;
+    }
+
+    .quest-list { display:flex; flex-direction:column; gap:.75rem; }
+
+    .quest-entry {
+      display:flex;
+      align-items:flex-start;
+      gap:.875rem;
+      padding:.875rem 1rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      cursor:pointer;
+      transition:border-color var(--dur-fast) var(--ease-out),
+                 background var(--dur-fast) var(--ease-out);
+      position:relative;
+    }
+    .quest-entry:hover {
+      background:var(--surf3);
+      border-color:var(--border-glow);
+    }
+    /* Parchment left accent */
+    .quest-entry::before {
+      content:'';
+      position:absolute;
+      left:0; top:25%; bottom:25%;
+      width:2px;
+      border-radius:var(--r-pill);
+      background:var(--gold-dim);
+      opacity:0;
+      transition:opacity var(--dur-fast) var(--ease-out);
+    }
+    .quest-entry:hover::before { opacity:1; }
+    .quest-entry.is-done::before { opacity:1; background:var(--green-bright); }
+    .quest-entry.is-done { opacity:.55; }
+
+    .quest-check {
+      width:20px; height:20px;
+      border-radius:50%;
+      border:1.5px solid var(--border-glow);
+      background:var(--surf3);
+      flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      margin-top:.1rem;
+      transition:background var(--dur-fast), border-color var(--dur-fast);
+    }
+    .quest-entry.is-done .quest-check {
+      background:var(--green);
+      border-color:var(--green-bright);
+    }
+    .quest-check svg { opacity:0; transition:opacity var(--dur-fast); }
+    .quest-entry.is-done .quest-check svg { opacity:1; }
+
+    .quest-body { flex:1; min-width:0; }
+    .quest-name {
+      font-size:.9375rem;
+      font-weight:500;
+      color:var(--txt);
+      margin-bottom:.25rem;
+      line-height:1.4;
+    }
+    .quest-entry.is-done .quest-name {
+      text-decoration:line-through;
+      color:var(--txt-muted);
+    }
+    .quest-meta {
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+    }
+    .quest-type {
+      font-family:var(--font-data);
+      font-size:.6875rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+    }
+    .quest-exp {
+      display:flex;
+      align-items:center;
+      gap:.3rem;
+      font-family:var(--font-data);
+      font-size:.75rem;
+      font-weight:600;
+      color:var(--gold);
+    }
+    .quest-exp svg { color:var(--gold); }
+    .quest-difficulty {
+      display:flex; gap:2px;
+    }
+    .diff-pip {
+      width:5px; height:5px;
+      border-radius:50%;
+      background:var(--surf3);
+    }
+    .diff-pip.on { background:var(--gold-dim); }
+    .diff-pip.on:first-child { background:var(--gold); }
+
+    /* Empty state */
+    .quest-empty {
+      text-align:center;
+      padding:2.5rem 1rem;
+      color:var(--txt-muted);
+      font-size:.875rem;
+    }
+    .quest-empty svg { margin:0 auto .75rem; opacity:.25; }
+
+    /* ── DAILY LOG ───────────────────────────────────────────── */
+    .daily-log {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.5rem;
+      margin-bottom:1.25rem;
+    }
+
+    /* Mood Picker */
+    .mood-row {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding-bottom:1rem;
+      margin-bottom:1rem;
+      border-bottom:1px solid var(--border);
+    }
+    .mood-label {
+      font-size:.8125rem;
+      color:var(--txt-sec);
+    }
+    .mood-options {
+      display:flex;
+      gap:.5rem;
+    }
+    .mood-btn {
+      width:36px; height:36px;
+      border-radius:50%;
+      background:var(--surf2);
+      border:1.5px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+      font-size:1.1rem;
+      transition:background var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+      cursor:pointer;
+    }
+    .mood-btn:hover { background:var(--surf3); border-color:var(--border-glow); transform:scale(1.1); }
+    .mood-btn.selected {
+      background:rgba(201,136,42,.15);
+      border-color:var(--gold);
+      color:var(--gold-bright);
+      box-shadow:var(--glow-gold-sm);
+    }
+    .mood-btn svg { pointer-events:none; }
+
+    /* Habit Checklist */
+    .habit-list { display:flex; flex-direction:column; gap:.6rem; }
+    .habit-row {
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      padding:.625rem .875rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-md);
+      cursor:pointer;
+      transition:background var(--dur-fast), border-color var(--dur-fast);
+      user-select:none;
+    }
+    .habit-row:hover { background:var(--surf3); border-color:var(--border-glow); }
+    .habit-row.checked { border-color:rgba(39,174,96,.3); }
+    .habit-box {
+      width:18px; height:18px;
+      border-radius:var(--r-sm);
+      border:1.5px solid var(--border-glow);
+      background:var(--surf3);
+      flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      transition:background var(--dur-fast), border-color var(--dur-fast);
+    }
+    .habit-row.checked .habit-box {
+      background:var(--green);
+      border-color:var(--green-bright);
+    }
+    .habit-box svg { opacity:0; transition:opacity var(--dur-fast); }
+    .habit-row.checked .habit-box svg { opacity:1; }
+    .habit-name {
+      flex:1;
+      font-size:.875rem;
+      color:var(--txt);
+    }
+    .habit-row.checked .habit-name {
+      color:var(--txt-muted);
+      text-decoration:line-through;
+    }
+    .habit-streak {
+      display:flex;
+      align-items:center;
+      gap:.3rem;
+      font-family:var(--font-data);
+      font-size:.75rem;
+      font-weight:600;
+      color:var(--gold-dim);
+    }
+    .habit-streak.hot { color:var(--gold); }
+    .habit-streak svg { color:inherit; }
+
+    /* Log Horizon link */
+    .log-add-btn {
+      display:flex;
+      align-items:center;
+      gap:.5rem;
+      width:100%;
+      margin-top:.75rem;
+      padding:.5rem .875rem;
+      background:transparent;
+      border:1px dashed var(--border);
+      border-radius:var(--r-md);
+      color:var(--txt-muted);
+      font-size:.8125rem;
+      font-family:var(--font-body);
+      cursor:pointer;
+      transition:color var(--dur-fast), border-color var(--dur-fast);
+    }
+    .log-add-btn:hover { color:var(--gold); border-color:var(--gold-dim); }
+    .log-add-btn svg { color:inherit; }
+
+    /* ── RIGHT COLUMN ────────────────────────────────────────── */
+    .right-col { display:flex; flex-direction:column; gap:1.25rem; }
+
+    /* ── RANKING CARD ────────────────────────────────────────── */
+    .ranking-card {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.25rem 1.5rem;
+    }
+    .ranking-list { display:flex; flex-direction:column; gap:.5rem; margin-top:.25rem; }
+    .ranking-row {
+      display:flex;
+      align-items:center;
+      gap:.75rem;
+      padding:.5rem .75rem;
+      border-radius:var(--r-md);
+      transition:background var(--dur-fast);
+    }
+    .ranking-row:hover { background:var(--surf2); }
+    .ranking-row.is-me {
+      background:rgba(201,136,42,.08);
+      border:1px solid rgba(201,136,42,.2);
+    }
+    .rank-num {
+      font-family:var(--font-data);
+      font-size:.875rem;
+      font-weight:700;
+      color:var(--txt-muted);
+      width:24px;
+      text-align:center;
+      flex-shrink:0;
+    }
+    .rank-num.gold { color:var(--gold-bright); }
+    .rank-num.silver { color:#c2c2d8; }
+    .rank-num.bronze { color:#b87333; }
+    .rank-avatar {
+      width:28px; height:28px;
+      border-radius:50%;
+      background:var(--surf3);
+      border:1px solid var(--border);
+      flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+      overflow:hidden;
+    }
+    .rank-name {
+      flex:1;
+      font-size:.875rem;
+      color:var(--txt);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .ranking-row.is-me .rank-name { color:var(--gold-bright); font-weight:500; }
+    .rank-exp {
+      font-family:var(--font-data);
+      font-size:.75rem;
+      font-weight:600;
+      color:var(--txt-muted);
+      flex-shrink:0;
+    }
+    .ranking-row.is-me .rank-exp { color:var(--gold); }
+
+    /* ── SEASON CARD ─────────────────────────────────────────── */
+    .season-card {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.25rem 1.5rem;
+      position:relative;
+      overflow:hidden;
+    }
+    .season-card::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background:linear-gradient(135deg, rgba(201,136,42,.05) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .season-name {
+      font-family:var(--font-display);
+      font-size:.9375rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--txt);
+      margin-bottom:.25rem;
+    }
+    .season-sub {
+      font-size:.8125rem;
+      color:var(--txt-sec);
+      margin-bottom:1rem;
+    }
+    .season-timer {
+      display:flex;
+      gap:.75rem;
+      margin-bottom:1rem;
+    }
+    .timer-block {
+      flex:1;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-md);
+      padding:.5rem;
+      text-align:center;
+    }
+    .timer-val {
+      font-family:var(--font-data);
+      font-size:1.25rem;
+      font-weight:700;
+      color:var(--gold-bright);
+      line-height:1;
+      margin-bottom:.25rem;
+    }
+    .timer-lbl {
+      font-size:.625rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+    }
+    .season-progress-label {
+      display:flex;
+      justify-content:space-between;
+      font-size:.75rem;
+      color:var(--txt-muted);
+      margin-bottom:.4rem;
+    }
+    .season-track {
+      width:100%;
+      height:5px;
+      background:var(--surf3);
+      border-radius:var(--r-pill);
+      overflow:hidden;
+    }
+    .season-fill {
+      height:100%;
+      background:linear-gradient(90deg, var(--gold-dim), var(--gold));
+      border-radius:var(--r-pill);
+    }
+
+    /* ── PARTY CARD ──────────────────────────────────────────── */
+    .party-card {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.25rem 1.5rem;
+    }
+    .party-empty {
+      text-align:center;
+      padding:1rem 0;
+      color:var(--txt-muted);
+      font-size:.8125rem;
+    }
+    .party-empty svg { margin:0 auto .5rem; opacity:.2; }
+    .btn-outline-gold {
+      display:inline-flex;
+      align-items:center;
+      gap:.4rem;
+      padding:.45rem 1rem;
+      background:transparent;
+      border:1px solid var(--gold-dim);
+      border-radius:var(--r-pill);
+      color:var(--gold);
+      font-size:.75rem;
+      font-family:var(--font-data);
+      font-weight:600;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      cursor:pointer;
+      transition:background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+    }
+    .btn-outline-gold:hover {
+      background:rgba(201,136,42,.12);
+      border-color:var(--gold);
+      color:var(--gold-bright);
+    }
+    .btn-outline-gold svg { color:inherit; }
+
+    /* Party members */
+    .party-members { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .party-member {
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:.35rem;
+      position:relative;
+    }
+    .party-member-avatar {
+      width:40px; height:40px;
+      border-radius:50%;
+      background:var(--surf3);
+      border:1.5px solid var(--border);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+      overflow:hidden;
+    }
+    .party-member-name {
+      font-size:.625rem;
+      color:var(--txt-muted);
+      text-align:center;
+      max-width:48px;
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .party-member-online {
+      position:absolute;
+      top:0; right:0;
+      width:9px; height:9px;
+      border-radius:50%;
+      background:var(--green-bright);
+      border:1.5px solid var(--void);
+    }
+
+    /* ── GUILD CARD ──────────────────────────────────────────── */
+    .guild-card {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.25rem 1.5rem;
+    }
+    .guild-banner {
+      display:flex;
+      align-items:center;
+      gap:.875rem;
+      margin-bottom:1rem;
+    }
+    .guild-crest {
+      width:44px; height:44px;
+      border-radius:var(--r-md);
+      background:var(--surf3);
+      border:1px solid var(--border-glow);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--gold-dim);
+      flex-shrink:0;
+    }
+    .guild-name {
+      font-family:var(--font-display);
+      font-size:.9375rem;
+      font-weight:600;
+      letter-spacing:.04em;
+      color:var(--txt);
+    }
+    .guild-role-tag {
+      font-size:.6875rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      color:var(--txt-muted);
+      text-transform:uppercase;
+    }
+    .guild-stats {
+      display:flex;
+      gap:1rem;
+    }
+    .guild-stat {
+      flex:1;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-md);
+      padding:.5rem .75rem;
+    }
+    .guild-stat-val {
+      font-family:var(--font-data);
+      font-size:1rem;
+      font-weight:700;
+      color:var(--txt);
+      line-height:1;
+      margin-bottom:.2rem;
+    }
+    .guild-stat-lbl {
+      font-size:.625rem;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────── */
+    @media (max-width:1024px) {
+      .main-content { margin-left:var(--sidebar-collapsed); padding:1.5rem; }
+      .dashboard-grid { grid-template-columns:1fr; }
+      .right-col { display:grid; grid-template-columns:1fr 1fr; }
+    }
+    @media (max-width:640px) {
+      .main-content { margin-left:0; padding:1rem; }
+      .right-col { grid-template-columns:1fr; }
+      .hero-inner { gap:1rem; }
+      .hero-avatar { width:64px; height:64px; }
+      .hero-name { font-size:1.15rem; }
+      .hero-stats-row { gap:.875rem; }
+      .season-timer { gap:.5rem; }
+    }
+
+    /* ── ANIMATIONS ──────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .hero-zone          { animation:fadeUp var(--dur-slow) var(--ease-out) both; }
+    .quest-log          { animation:fadeUp var(--dur-slow) var(--ease-out) .07s both; }
+    .daily-log          { animation:fadeUp var(--dur-slow) var(--ease-out) .14s both; }
+    .ranking-card       { animation:fadeUp var(--dur-slow) var(--ease-out) .05s both; }
+    .season-card        { animation:fadeUp var(--dur-slow) var(--ease-out) .1s  both; }
+    .party-card         { animation:fadeUp var(--dur-slow) var(--ease-out) .15s both; }
+    .guild-card         { animation:fadeUp var(--dur-slow) var(--ease-out) .2s  both; }
+
+    /* reduced motion */
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar injected here -->
+  <div id="sidebar-root"></div>
+
+  <!-- ── MAIN CONTENT ──────────────────────────────────────── -->
+  <main class="main-content" id="main-content">
+
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="page-header-left">
+        <p class="page-label">VAELTHAR</p>
+        <h1 class="page-title">Command Post</h1>
+      </div>
+      <p class="page-date" id="current-date">—</p>
+    </header>
+
+    <!-- ── HERO ZONE ────────────────────────────────────────── -->
+    <section class="hero-zone">
+      <div class="hero-inner">
+
+        <div class="hero-avatar-wrap">
+          <div class="hero-avatar" id="hero-avatar">
+            <!-- Avatar img or fallback icon injected via JS -->
+          </div>
+          <span class="online-dot"></span>
+        </div>
+
+        <div class="hero-info">
+          <h2 class="hero-name" id="hero-name">Adventurer</h2>
+
+          <div class="hero-role-row">
+            <span class="role-badge" id="role-badge">
+              <!-- icon + name injected -->
+            </span>
+            <span class="mode-tag" id="role-mode">Choose Mode</span>
+          </div>
+
+          <div class="exp-section">
+            <div class="exp-meta">
+              <div class="exp-level">
+                <span id="hero-level">1</span>
+                <span>LV</span>
+              </div>
+              <div class="exp-numbers">
+                <strong id="exp-current">0</strong> / <span id="exp-next">500</span> EXP
+              </div>
+            </div>
+            <div class="exp-track">
+              <div class="exp-fill" id="exp-fill" style="width:0%"></div>
+            </div>
+          </div>
+
+          <!-- Inline stats row (replaced 4 separate cards) -->
+          <div class="hero-stats-row">
+            <div class="stat-item">
+              <div id="stat-icon-quest"></div>
+              <div>
+                <div class="stat-val" id="stat-quests-done">0</div>
+                <div class="stat-lbl">Quests</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div id="stat-icon-streak"></div>
+              <div>
+                <div class="stat-val" id="stat-streak">0</div>
+                <div class="stat-lbl">Day Streak</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div id="stat-icon-rank"></div>
+              <div>
+                <div class="stat-val" id="stat-rank">#—</div>
+                <div class="stat-lbl">Global Rank</div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div id="stat-icon-coin"></div>
+              <div>
+                <div class="stat-val" id="stat-coins">0</div>
+                <div class="stat-lbl">EXP Coin</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── DASHBOARD GRID ────────────────────────────────────── -->
+    <div class="dashboard-grid">
+
+      <!-- LEFT: Quest Log + Daily Log -->
+      <div class="left-col">
+
+        <!-- QUEST LOG -->
+        <div class="quest-log">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-quest"></span>
+              Quest Log
+            </h3>
+            <a href="/quest.html" class="section-link">
+              All Quests <span id="section-link-icon-quest"></span>
+            </a>
+          </div>
+
+          <div class="quest-list" id="quest-list">
+
+            <!-- Skeleton / loading placeholder -->
+            <div class="quest-entry" id="q-loading">
+              <div class="quest-check"></div>
+              <div class="quest-body">
+                <div class="quest-name" style="color:var(--txt-muted)">กำลังโหลด Quest...</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- DAILY LOG (Mood + Habits merged) -->
+        <div class="daily-log">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-log"></span>
+              Daily Log
+            </h3>
+            <a href="/habit.html" class="section-link">
+              ดูทั้งหมด <span id="section-link-icon-habit"></span>
+            </a>
+          </div>
+
+          <!-- Mood -->
+          <div class="mood-row">
+            <span class="mood-label">วันนี้รู้สึกอย่างไร?</span>
+            <div class="mood-options" id="mood-options">
+              <!-- injected by JS -->
+            </div>
+          </div>
+
+          <!-- Habits -->
+          <div class="habit-list" id="habit-list">
+            <div class="habit-row" style="pointer-events:none; opacity:.4">
+              <div class="habit-box"></div>
+              <span class="habit-name">กำลังโหลด Habit...</span>
+            </div>
+          </div>
+
+          <button class="log-add-btn" onclick="window.location.href='/habit.html'">
+            <span id="add-habit-icon"></span>
+            เพิ่ม Habit ใหม่
+          </button>
+        </div>
+
+      </div><!-- /left-col -->
+
+      <!-- RIGHT: Ranking + Season + Party + Guild -->
+      <div class="right-col">
+
+        <!-- RANKING -->
+        <div class="ranking-card">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-rank"></span>
+              Global Rank
+            </h3>
+            <a href="/ranking.html" class="section-link">
+              ดูทั้งหมด <span id="section-link-icon-rank"></span>
+            </a>
+          </div>
+          <div class="ranking-list" id="ranking-list">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+        <!-- SEASON -->
+        <div class="season-card">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-season"></span>
+              Season
+            </h3>
+            <a href="/season.html" class="section-link">
+              รายละเอียด <span id="section-link-icon-season"></span>
+            </a>
+          </div>
+          <p class="season-name" id="season-name">Season I</p>
+          <p class="season-sub" id="season-sub">The Age of Awakening</p>
+          <div class="season-timer" id="season-timer">
+            <div class="timer-block">
+              <div class="timer-val" id="timer-d">—</div>
+              <div class="timer-lbl">Days</div>
+            </div>
+            <div class="timer-block">
+              <div class="timer-val" id="timer-h">—</div>
+              <div class="timer-lbl">Hours</div>
+            </div>
+            <div class="timer-block">
+              <div class="timer-val" id="timer-m">—</div>
+              <div class="timer-lbl">Min</div>
+            </div>
+          </div>
+          <div class="season-progress-label">
+            <span>Season Progress</span>
+            <span id="season-pct">0%</span>
+          </div>
+          <div class="season-track">
+            <div class="season-fill" id="season-fill" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- PARTY -->
+        <div class="party-card">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-party"></span>
+              Party
+            </h3>
+            <a href="/party.html" class="section-link">
+              ดูทั้งหมด <span id="section-link-icon-party"></span>
+            </a>
+          </div>
+          <div id="party-content">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+        <!-- GUILD -->
+        <div class="guild-card">
+          <div class="section-head">
+            <h3 class="section-title">
+              <span id="section-icon-guild"></span>
+              Guild
+            </h3>
+            <a href="/guild.html" class="section-link">
+              ดูทั้งหมด <span id="section-link-icon-guild"></span>
+            </a>
+          </div>
+          <div id="guild-content">
+            <!-- injected by JS -->
+          </div>
+        </div>
+
+      </div><!-- /right-col -->
+
+    </div><!-- /dashboard-grid -->
+
+  </main><!-- /main-content -->
+
+  <!-- ── SCRIPTS ──────────────────────────────────────────── -->
+  <script type="module">
+    import { icon }                            from '/js/ui/icons.js';
+    import { initSidebar }                     from '/js/ui/sidebar.js';
+    import { showToast }                       from '/js/ui/toast.js';
+    import { requireAuth, currentUser }        from '/js/core/auth.js';
+    import { store, STATE }                    from '/js/core/storage.js';
+    import { supabase }                        from '/js/core/api.js';
+
+    /* ── AUTH GUARD ─────────────────────────────────────────── */
+    const user = await requireAuth();     // redirects to login.html if not signed in
+
+    /* ── SIDEBAR ────────────────────────────────────────────── */
+    initSidebar();
+
+    /* ── INJECT STATIC ICONS ────────────────────────────────── */
+    // Hero avatar fallback
+    document.getElementById('hero-avatar').innerHTML = icon('user', 36);
+
+    // Section icons
+    document.getElementById('section-icon-quest').innerHTML   = icon('scroll', 14);
+    document.getElementById('section-link-icon-quest').innerHTML = icon('chevron_right', 12);
+    document.getElementById('section-icon-log').innerHTML     = icon('habit', 14);
+    document.getElementById('section-link-icon-habit').innerHTML = icon('chevron_right', 12);
+    document.getElementById('section-icon-rank').innerHTML    = icon('ranking', 14);
+    document.getElementById('section-link-icon-rank').innerHTML  = icon('chevron_right', 12);
+    document.getElementById('section-icon-season').innerHTML  = icon('season', 14);
+    document.getElementById('section-link-icon-season').innerHTML = icon('chevron_right', 12);
+    document.getElementById('section-icon-party').innerHTML   = icon('party', 14);
+    document.getElementById('section-link-icon-party').innerHTML  = icon('chevron_right', 12);
+    document.getElementById('section-icon-guild').innerHTML   = icon('guild', 14);
+    document.getElementById('section-link-icon-guild').innerHTML  = icon('chevron_right', 12);
+
+    // Stat icons
+    document.getElementById('stat-icon-quest').innerHTML  = icon('quest', 16);
+    document.getElementById('stat-icon-streak').innerHTML = icon('flame', 16);
+    document.getElementById('stat-icon-rank').innerHTML   = icon('trophy', 16);
+    document.getElementById('stat-icon-coin').innerHTML   = icon('coin', 16);
+
+    // Add habit icon
+    document.getElementById('add-habit-icon').innerHTML = icon('plus', 14);
+
+    /* ── CURRENT DATE ───────────────────────────────────────── */
+    const now = new Date();
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('current-date').textContent =
+      `${dayNames[now.getDay()]} ${now.getDate()} ${monthNames[now.getMonth()]} ${now.getFullYear()}`;
+
+    /* ── LOAD PROFILE ───────────────────────────────────────── */
+    async function loadProfile() {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) return;
+
+      document.getElementById('hero-name').textContent = profile.display_name || user.email;
+
+      if (profile.avatar_url) {
+        document.getElementById('hero-avatar').innerHTML =
+          `<img src="${profile.avatar_url}" alt="avatar" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`;
+      }
+    }
+
+    /* ── LOAD EXP / LEVEL ───────────────────────────────────── */
+    async function loadExpLevel() {
+      // Sum EXP from exp_logs
+      const { data: logs } = await supabase
+        .from('exp_logs')
+        .select('amount')
+        .eq('user_id', user.id);
+
+      const totalExp = logs ? logs.reduce((s, r) => s + (r.amount || 0), 0) : 0;
+
+      // Simple level formula: each level needs level*200 EXP
+      let level = 1, acc = 0;
+      while (acc + level * 200 <= totalExp) { acc += level * 200; level++; }
+      const expInLevel = totalExp - acc;
+      const expNeeded  = level * 200;
+      const pct = Math.min(100, Math.round(expInLevel / expNeeded * 100));
+
+      document.getElementById('hero-level').textContent  = level;
+      document.getElementById('exp-current').textContent = expInLevel.toLocaleString();
+      document.getElementById('exp-next').textContent    = expNeeded.toLocaleString();
+      document.getElementById('exp-fill').style.width    = pct + '%';
+    }
+
+    /* ── LOAD ROLE ──────────────────────────────────────────── */
+    async function loadRole() {
+      const { data: ur } = await supabase
+        .from('user_roles')
+        .select('role_id, mode, roles(name, slug)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!ur) {
+        document.getElementById('role-badge').innerHTML = icon('compass', 14) + ' &nbsp;No Role';
+        return;
+      }
+
+      const roleName = ur.roles?.name || ur.role_id;
+      const roleSlug = ur.roles?.slug || ur.role_id?.toLowerCase();
+      const roleIcon = icon(roleSlug, 14) || icon('compass', 14);
+
+      document.getElementById('role-badge').innerHTML = roleIcon + ' ' + roleName;
+      document.getElementById('role-mode').textContent =
+        ur.mode === 'random' ? 'Random Mode (+25% EXP)' : 'Choose Mode';
+    }
+
+    /* ── LOAD QUICK STATS ───────────────────────────────────── */
+    async function loadStats() {
+      // Quests completed today
+      const today = new Date().toISOString().split('T')[0];
+      const { count: questsDone } = await supabase
+        .from('user_quests')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'completed')
+        .gte('completed_at', today);
+
+      document.getElementById('stat-quests-done').textContent = questsDone ?? 0;
+
+      // Habit streak (longest current streak from habit_logs)
+      const { data: streakData } = await supabase
+        .from('habit_logs')
+        .select('logged_date')
+        .eq('user_id', user.id)
+        .order('logged_date', { ascending: false })
+        .limit(60);
+
+      let streak = 0;
+      if (streakData?.length) {
+        const dates = streakData.map(r => r.logged_date);
+        const check = new Date(); check.setHours(0,0,0,0);
+        for (let i = 0; i < 60; i++) {
+          const d = new Date(check); d.setDate(d.getDate() - i);
+          const dStr = d.toISOString().split('T')[0];
+          if (dates.includes(dStr)) streak++;
+          else if (i > 0) break;
+        }
+      }
+      document.getElementById('stat-streak').textContent = streak;
+
+      // Coins
+      const { data: coinData } = await supabase
+        .from('exp_logs')
+        .select('amount')
+        .eq('user_id', user.id)
+        .eq('currency', 'coin');
+      const coins = coinData ? coinData.reduce((s, r) => s + (r.amount || 0), 0) : 0;
+      document.getElementById('stat-coins').textContent = coins.toLocaleString();
+    }
+
+    /* ── LOAD QUESTS ────────────────────────────────────────── */
+    async function loadQuests() {
+      const today = new Date().toISOString().split('T')[0];
+      const { data: uqs } = await supabase
+        .from('user_quests')
+        .select('id, status, quests(id, title, type, exp_reward, difficulty)')
+        .eq('user_id', user.id)
+        .in('status', ['accepted', 'completed'])
+        .limit(5);
+
+      const list = document.getElementById('quest-list');
+      const loadingEl = document.getElementById('q-loading');
+      if (loadingEl) loadingEl.remove();
+
+      if (!uqs || uqs.length === 0) {
+        list.innerHTML = `
+          <div class="quest-empty">
+            <div>${icon('scroll', 28)}</div>
+            ยังไม่มี Quest วันนี้<br>
+            <a href="/quest.html" style="color:var(--gold);font-size:.8125rem;margin-top:.5rem;display:inline-block;">รับ Quest แรก</a>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = uqs.map(uq => {
+        const q = uq.quests;
+        const done = uq.status === 'completed';
+        const diff = Math.min(5, q?.difficulty || 1);
+        const pips = Array.from({length:5}, (_,i) =>
+          `<span class="diff-pip ${i < diff ? 'on' : ''}"></span>`).join('');
+
+        return `
+          <div class="quest-entry ${done ? 'is-done' : ''}" data-uqid="${uq.id}" onclick="toggleQuest(this)">
+            <div class="quest-check">
+              ${icon('check', 10)}
+            </div>
+            <div class="quest-body">
+              <div class="quest-name">${q?.title || 'Unknown Quest'}</div>
+              <div class="quest-meta">
+                <span class="quest-type">${q?.type || 'daily'}</span>
+                <span class="quest-exp">${icon('exp', 11)} +${q?.exp_reward || 0}</span>
+                <span class="quest-difficulty">${pips}</span>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    /* Quest toggle (quick complete) */
+    window.toggleQuest = async function(el) {
+      const uqId = el.dataset.uqid;
+      if (!uqId) return;
+      const isDone = el.classList.contains('is-done');
+      if (isDone) return; // can't un-complete
+
+      el.classList.add('is-done');
+      await supabase
+        .from('user_quests')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', uqId);
+      showToast('Quest Complete!', 'EXP บันทึกแล้ว', 'success');
+    };
+
+    /* ── MOOD OPTIONS ───────────────────────────────────────── */
+    const MOODS = [
+      { key:'great',   label:'Great',   ico:'star'   },
+      { key:'good',    label:'Good',    ico:'sun'    },
+      { key:'neutral', label:'Neutral', ico:'cloud'  },
+      { key:'low',     label:'Low',     ico:'rain'   },
+      { key:'rough',   label:'Rough',   ico:'storm'  },
+    ];
+
+    function buildMoodOptions(selectedKey = null) {
+      const container = document.getElementById('mood-options');
+      container.innerHTML = MOODS.map(m => `
+        <button class="mood-btn ${m.key === selectedKey ? 'selected' : ''}"
+                title="${m.label}"
+                onclick="selectMood('${m.key}', this)">
+          ${icon(m.ico, 16)}
+        </button>`).join('');
+    }
+
+    window.selectMood = async function(key, btn) {
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      const today = new Date().toISOString().split('T')[0];
+      await supabase.from('mood_logs').upsert({
+        user_id: user.id,
+        mood: key,
+        logged_date: today,
+      }, { onConflict: 'user_id,logged_date' });
+      showToast('Mood บันทึกแล้ว', key.charAt(0).toUpperCase() + key.slice(1), 'info');
+    };
+
+    async function loadMood() {
+      const today = new Date().toISOString().split('T')[0];
+      const { data } = await supabase
+        .from('mood_logs')
+        .select('mood')
+        .eq('user_id', user.id)
+        .eq('logged_date', today)
+        .maybeSingle();
+      buildMoodOptions(data?.mood || null);
+    }
+
+    /* ── HABITS ─────────────────────────────────────────────── */
+    async function loadHabits() {
+      const today = new Date().toISOString().split('T')[0];
+
+      const { data: habits } = await supabase
+        .from('habits')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .limit(6);
+
+      const { data: logs } = await supabase
+        .from('habit_logs')
+        .select('habit_id, streak')
+        .eq('user_id', user.id)
+        .eq('logged_date', today);
+
+      const loggedIds = new Set((logs || []).map(l => l.habit_id));
+      const streakMap = {};
+      (logs || []).forEach(l => { streakMap[l.habit_id] = l.streak || 0; });
+
+      const list = document.getElementById('habit-list');
+
+      if (!habits || habits.length === 0) {
+        list.innerHTML = `<p style="color:var(--txt-muted);font-size:.8125rem;text-align:center;padding:.5rem 0;">ยังไม่มี Habit — เพิ่มได้เลย</p>`;
+        return;
+      }
+
+      list.innerHTML = habits.map(h => {
+        const done = loggedIds.has(h.id);
+        const streak = streakMap[h.id] || 0;
+        const hot = streak >= 3;
+        return `
+          <div class="habit-row ${done ? 'checked' : ''}" data-hid="${h.id}" onclick="toggleHabit(this)">
+            <div class="habit-box">${icon('check', 10)}</div>
+            <span class="habit-name">${h.name}</span>
+            <span class="habit-streak ${hot ? 'hot' : ''}">
+              ${icon('flame', 12)} ${streak}
+            </span>
+          </div>`;
+      }).join('');
+    }
+
+    window.toggleHabit = async function(el) {
+      const hid = el.dataset.hid;
+      const today = new Date().toISOString().split('T')[0];
+      const wasChecked = el.classList.contains('checked');
+
+      if (wasChecked) {
+        el.classList.remove('checked');
+        await supabase.from('habit_logs')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('habit_id', hid)
+          .eq('logged_date', today);
+      } else {
+        el.classList.add('checked');
+        await supabase.from('habit_logs')
+          .upsert({ user_id: user.id, habit_id: hid, logged_date: today },
+                  { onConflict: 'user_id,habit_id,logged_date' });
+        showToast('Habit Done!', '', 'success');
+      }
+    };
+
+    /* ── RANKING (Top 5 + me) ───────────────────────────────── */
+    async function loadRanking() {
+      const { data: top } = await supabase
+        .rpc('get_global_ranking', { p_limit: 5 });
+
+      const list = document.getElementById('ranking-list');
+      if (!top || top.length === 0) {
+        list.innerHTML = `<p style="color:var(--txt-muted);font-size:.8125rem;text-align:center;padding:1rem 0;">ยังไม่มีข้อมูล Ranking</p>`;
+        return;
+      }
+
+      const rankClass = (i) => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+
+      list.innerHTML = top.map((row, i) => {
+        const isMe = row.user_id === user.id;
+        return `
+          <div class="ranking-row ${isMe ? 'is-me' : ''}">
+            <span class="rank-num ${rankClass(i)}">${i + 1}</span>
+            <div class="rank-avatar">${icon('user', 14)}</div>
+            <span class="rank-name">${row.display_name || 'Unknown'}</span>
+            <span class="rank-exp">${(row.total_exp || 0).toLocaleString()} XP</span>
+          </div>`;
+      }).join('');
+
+      // My global rank
+      const myIdx = top.findIndex(r => r.user_id === user.id);
+      document.getElementById('stat-rank').textContent = myIdx >= 0 ? `#${myIdx + 1}` : '#—';
+    }
+
+    /* ── SEASON ─────────────────────────────────────────────── */
+    async function loadSeason() {
+      const { data: season } = await supabase
+        .from('seasons')
+        .select('*')
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!season) return;
+
+      document.getElementById('season-name').textContent = season.name || 'Season I';
+      document.getElementById('season-sub').textContent  = season.theme || '';
+
+      const end   = new Date(season.end_date);
+      const start = new Date(season.start_date);
+      const total = end - start;
+      const remaining = end - Date.now();
+      const pct   = Math.round((1 - remaining / total) * 100);
+
+      document.getElementById('season-pct').textContent    = pct + '%';
+      document.getElementById('season-fill').style.width   = pct + '%';
+
+      function tick() {
+        const rem = end - Date.now();
+        if (rem <= 0) { clearInterval(tid); return; }
+        const d = Math.floor(rem / 86400000);
+        const h = Math.floor((rem % 86400000) / 3600000);
+        const m = Math.floor((rem % 3600000)  / 60000);
+        document.getElementById('timer-d').textContent = d;
+        document.getElementById('timer-h').textContent = String(h).padStart(2,'0');
+        document.getElementById('timer-m').textContent = String(m).padStart(2,'0');
+      }
+      tick();
+      const tid = setInterval(tick, 60000);
+    }
+
+    /* ── PARTY ──────────────────────────────────────────────── */
+    async function loadParty() {
+      const { data: pm } = await supabase
+        .from('party_members')
+        .select('party_id, parties(id, name), profiles(display_name, avatar_url, user_id)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const container = document.getElementById('party-content');
+
+      if (!pm) {
+        container.innerHTML = `
+          <div class="party-empty">
+            <div>${icon('party', 24)}</div>
+            ยังไม่มี Party
+          </div>
+          <div style="text-align:center;margin-top:.75rem;">
+            <button class="btn-outline-gold" onclick="window.location.href='/party.html'">
+              ${icon('plus', 13)} สร้าง Party
+            </button>
+          </div>`;
+        return;
+      }
+
+      const { data: members } = await supabase
+        .from('party_members')
+        .select('profiles(display_name, avatar_url, user_id)')
+        .eq('party_id', pm.party_id)
+        .limit(6);
+
+      container.innerHTML = `
+        <p style="font-size:.8125rem;color:var(--txt-sec);margin-bottom:.75rem;">${pm.parties?.name || 'My Party'}</p>
+        <div class="party-members">
+          ${(members || []).map(m => {
+            const p = m.profiles;
+            const isMe = p?.user_id === user.id;
+            return `
+              <div class="party-member">
+                <div class="party-member-avatar">
+                  ${p?.avatar_url
+                    ? `<img src="${p.avatar_url}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" />`
+                    : icon('user', 18)}
+                </div>
+                ${isMe ? '<span class="party-member-online"></span>' : ''}
+                <span class="party-member-name">${p?.display_name || '—'}</span>
+              </div>`;
+          }).join('')}
+        </div>`;
+    }
+
+    /* ── GUILD ──────────────────────────────────────────────── */
+    async function loadGuild() {
+      const { data: gm } = await supabase
+        .from('guild_members')
+        .select('role, guilds(id, name, member_count, total_exp)')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const container = document.getElementById('guild-content');
+
+      if (!gm) {
+        container.innerHTML = `
+          <div class="party-empty">
+            <div>${icon('guild', 24)}</div>
+            ยังไม่ได้เข้า Guild
+          </div>
+          <div style="text-align:center;margin-top:.75rem;">
+            <button class="btn-outline-gold" onclick="window.location.href='/guild.html'">
+              ${icon('plus', 13)} สร้าง / เข้าร่วม Guild
+            </button>
+          </div>`;
+        return;
+      }
+
+      const g = gm.guilds;
+      container.innerHTML = `
+        <div class="guild-banner">
+          <div class="guild-crest">${icon('guild', 22)}</div>
+          <div>
+            <div class="guild-name">${g?.name || 'Unknown Guild'}</div>
+            <div class="guild-role-tag">${gm.role || 'Member'}</div>
+          </div>
+        </div>
+        <div class="guild-stats">
+          <div class="guild-stat">
+            <div class="guild-stat-val">${g?.member_count || '—'}</div>
+            <div class="guild-stat-lbl">Members</div>
+          </div>
+          <div class="guild-stat">
+            <div class="guild-stat-val">${(g?.total_exp || 0).toLocaleString()}</div>
+            <div class="guild-stat-lbl">Guild EXP</div>
+          </div>
+        </div>`;
+    }
+
+    /* ── SIDEBAR COLLAPSED STATE ────────────────────────────── */
+    const mainEl = document.getElementById('main-content');
+    store.subscribe(STATE.SIDEBAR_COLLAPSED, (val) => {
+      mainEl.classList.toggle('sidebar-collapsed', val);
+    });
+
+    /* ── INIT ALL ───────────────────────────────────────────── */
+    await Promise.allSettled([
+      loadProfile(),
+      loadExpLevel(),
+      loadRole(),
+      loadStats(),
+      loadQuests(),
+      loadMood(),
+      loadHabits(),
+      loadRanking(),
+      loadSeason(),
+      loadParty(),
+      loadGuild(),
+    ]);
+
+  </script>
+
+</body>
+</html>
