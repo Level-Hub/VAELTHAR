@@ -821,7 +821,7 @@
         }
 
         // 5. Mark onboarding complete → redirect to dashboard
-        await completeOnboarding({ role_mode: selectedMode });
+        await completeOnboarding();
 
       } catch (err) {
         console.error('onboarding save error:', err);
