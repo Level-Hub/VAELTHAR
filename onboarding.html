@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>เริ่มต้นการผจญภัย — VAELTHAR</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -442,15 +442,29 @@
 
     /* ── RESPONSIVE ── */
     @media(max-width:640px) {
-      .ob-header { padding:1rem 1.25rem; }
-      .ob-body { padding:1.5rem 1rem; }
-      .ob-footer { padding:1.25rem 1rem; }
+      .ob-header { padding:.75rem 1rem; }
+      .ob-body { padding:1rem .75rem; }
+      .ob-footer { padding:.75rem 1rem; }
       .ob-steps { display:none; }
       .ob-panel { width:100%; max-width:100%; }
       .roles-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
       .welcome-stats { grid-template-columns:repeat(3,1fr); }
       .habit-add-row { flex-wrap:nowrap; }
-      .step-title { font-size:1.6rem; }
+      .step-title { font-size:1.4rem; }
+      .step-sub { font-size:.8rem; }
+      .hs-item { padding:.7rem .75rem; gap:.6rem; }
+      .hs-label { font-size:.78rem; }
+      .hs-exp { font-size:.68rem; }
+      .habits-intro { padding:.75rem 1rem; font-size:.78rem; }
+    }
+    @media(max-width:400px) {
+      .ob-header { padding:.65rem .75rem; }
+      .ob-body { padding:.75rem .65rem; }
+      .ob-footer { padding:.65rem .75rem; }
+      .hs-item { padding:.6rem .65rem; gap:.5rem; }
+      .hs-label { font-size:.74rem; }
+      .hs-exp { font-size:.64rem; }
+      .step-title { font-size:1.2rem; }
     }
   </style>
 </head>
