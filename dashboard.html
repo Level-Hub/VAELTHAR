@@ -1088,7 +1088,23 @@
     import { supabase }                        from '/api.js';
 
     /* ── AUTH GUARD ─────────────────────────────────────────── */
-    const user = await requireAuth();     // redirects to login.html if not signed in
+    const { user } = await requireAuth();  // redirects to login.html if not signed in
+    if (!user) throw new Error('no user');
+
+    /* ── ROLE GUARD — ถ้ายังไม่มี role ให้กลับ onboarding ── */
+    {
+      const { data: ur } = await supabase
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (!ur) {
+        window.location.href = '/onboarding.html';
+        throw new Error('no role');
+      }
+    }
 
     /* ── SIDEBAR ────────────────────────────────────────────── */
     initSidebar();

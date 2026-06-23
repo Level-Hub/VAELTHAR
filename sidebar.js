@@ -91,6 +91,35 @@ export async function initSidebar() {
   _sidebarEl = _build(profile);
   document.body.prepend(_sidebarEl);
 
+  /* ── Mobile open button + overlay (inject once) ── */
+  if (!document.getElementById('sidebar-mobile-btn')) {
+    const overlay = document.createElement('div');
+    overlay.id = 'sidebar-overlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:149;';
+    overlay.addEventListener('click', _closeMobile);
+    document.body.appendChild(overlay);
+
+    const mBtn = document.createElement('button');
+    mBtn.id = 'sidebar-mobile-btn';
+    mBtn.setAttribute('aria-label', 'เปิดเมนู');
+    mBtn.innerHTML = icon('sidebar_open', 18);
+    mBtn.style.cssText = `
+      position:fixed; top:12px; left:12px; z-index:148;
+      width:38px; height:38px;
+      display:none; align-items:center; justify-content:center;
+      background:var(--surf2); border:1px solid var(--border);
+      border-radius:8px; color:var(--txt-sec); cursor:pointer;
+    `;
+    mBtn.addEventListener('click', _openMobile);
+    document.body.appendChild(mBtn);
+
+    /* Show button only on mobile */
+    const mq = window.matchMedia('(max-width:640px)');
+    const toggle = (e) => { mBtn.style.display = e.matches ? 'flex' : 'none'; };
+    toggle(mq);
+    mq.addEventListener('change', toggle);
+  }
+
   _applyCollapsed(_collapsed);
   _updateActiveLinks(window.location.pathname);
 
@@ -254,6 +283,18 @@ function _toggleCollapse() {
   _collapsed = !_collapsed;
   setSidebarCollapsed(_collapsed);
   _applyCollapsed(_collapsed);
+}
+
+function _openMobile() {
+  _sidebarEl?.classList.add('sidebar--mobile-open');
+  const ov = document.getElementById('sidebar-overlay');
+  if (ov) ov.style.display = 'block';
+}
+
+function _closeMobile() {
+  _sidebarEl?.classList.remove('sidebar--mobile-open');
+  const ov = document.getElementById('sidebar-overlay');
+  if (ov) ov.style.display = 'none';
 }
 
 function _applyCollapsed(collapsed) {

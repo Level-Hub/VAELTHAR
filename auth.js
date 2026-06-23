@@ -154,7 +154,19 @@ export async function requireGuest() {
   await initAuth();
 
   if (_session) {
-    redirect(ROUTES.dashboard);
+    /* เช็คว่ามี role แล้วหรือยัง */
+    const { data: ur } = await supabase
+      .from('user_roles')
+      .select('id')
+      .eq('user_id', _user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!ur) {
+      redirect(ROUTES.onboarding);
+    } else {
+      redirect(ROUTES.dashboard);
+    }
     return null;
   }
 
