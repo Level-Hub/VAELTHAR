@@ -1096,19 +1096,295 @@
     if (!authState?.user) throw new Error('no user');
     const { user, profile } = authState;
 
-    /* ── DEBUG — ลบทิ้งหลัง fix ── */
-    {
-      const dbg = document.createElement('div');
-      dbg.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a0a0a;color:#f1c40f;font-size:11px;padding:6px 10px;font-family:monospace;line-height:1.6;';
-      dbg.innerHTML = `
-        user: ${user?.id?.slice(0,8) ?? 'NULL'}<br>
-        profile: ${profile ? profile.display_name ?? 'no display_name' : 'NULL'}<br>
-        store.USER: ${store.get(STATE.USER)?.id?.slice(0,8) ?? 'NULL'}<br>
-        store.PROFILE: ${store.get(STATE.PROFILE)?.display_name ?? 'NULL'}
+    /* ── DEBUG PANEL ── */
+    (function setupDebugPanel() {
+      // ─── Styles ───────────────────────────────────────────
+      const style = document.createElement('style');
+      style.textContent = `
+        #dbg-fab {
+          position:fixed; bottom:80px; right:16px; z-index:10000;
+          width:48px; height:48px; border-radius:50%;
+          background:#c9882a; border:none; cursor:pointer;
+          display:flex; align-items:center; justify-content:center;
+          box-shadow:0 4px 16px rgba(0,0,0,.5);
+          font-size:20px; color:#fff;
+          transition:transform .15s;
+        }
+        #dbg-fab:active { transform:scale(.9); }
+        #dbg-overlay {
+          display:none; position:fixed; inset:0; z-index:9999;
+          background:rgba(0,0,0,.85); overflow-y:auto;
+          padding:16px; font-family:monospace; font-size:12px; color:#e0e0e0;
+        }
+        #dbg-overlay.open { display:block; }
+        .dbg-close {
+          position:sticky; top:0; right:0; float:right;
+          background:#c9882a; color:#fff; border:none; border-radius:8px;
+          padding:6px 14px; font-size:13px; cursor:pointer; margin-bottom:12px;
+        }
+        .dbg-section {
+          background:#1a1a2e; border:1px solid #333; border-radius:10px;
+          padding:12px; margin-bottom:12px;
+        }
+        .dbg-section h4 {
+          color:#c9882a; font-size:11px; letter-spacing:.1em;
+          text-transform:uppercase; margin:0 0 8px; font-family:monospace;
+        }
+        .dbg-btn {
+          display:inline-block; margin:4px 4px 4px 0;
+          padding:8px 14px; background:#2a2a3e; border:1px solid #555;
+          border-radius:20px; color:#e0e0e0; font-size:12px;
+          cursor:pointer; font-family:monospace;
+          transition:background .15s, border-color .15s;
+        }
+        .dbg-btn:active { background:#3a3a5e; border-color:#c9882a; }
+        .dbg-btn.ok  { border-color:#27ae60; color:#2ecc71; }
+        .dbg-btn.err { border-color:#e74c3c; color:#ff6b6b; }
+        .dbg-btn.run { border-color:#c9882a; color:#f1c40f; }
+        #dbg-log {
+          background:#0d0d1a; border:1px solid #333; border-radius:8px;
+          padding:10px; min-height:80px; max-height:260px; overflow-y:auto;
+          white-space:pre-wrap; word-break:break-all; font-size:11px;
+          color:#a0ffb0; line-height:1.6;
+        }
+        .dbg-kv { margin:2px 0; }
+        .dbg-key { color:#f1c40f; }
+        .dbg-val { color:#a0c8ff; }
+        .dbg-err { color:#ff6b6b; }
+        .dbg-ok  { color:#2ecc71; }
       `;
-      document.body.appendChild(dbg);
-      setTimeout(() => dbg.remove(), 8000);
-    }
+      document.head.appendChild(style);
+
+      // ─── FAB button ──────────────────────────────────────
+      const fab = document.createElement('button');
+      fab.id = 'dbg-fab';
+      fab.title = 'Debug Panel';
+      fab.innerHTML = '🐛';
+      document.body.appendChild(fab);
+
+      // ─── Overlay ─────────────────────────────────────────
+      const overlay = document.createElement('div');
+      overlay.id = 'dbg-overlay';
+      overlay.innerHTML = `
+        <button class="dbg-close" id="dbg-close-btn">✕ ปิด</button>
+        <div style="clear:both;"></div>
+
+        <!-- Auth State -->
+        <div class="dbg-section">
+          <h4>Auth State</h4>
+          <div id="dbg-auth-state">กำลังโหลด...</div>
+        </div>
+
+        <!-- Store State -->
+        <div class="dbg-section">
+          <h4>Store State</h4>
+          <div id="dbg-store-state">กำลังโหลด...</div>
+        </div>
+
+        <!-- Supabase Fetch Tests -->
+        <div class="dbg-section">
+          <h4>ทดสอบ Fetch แต่ละส่วน</h4>
+          <button class="dbg-btn" data-fn="profile">Profile</button>
+          <button class="dbg-btn" data-fn="role">Role</button>
+          <button class="dbg-btn" data-fn="exp">EXP Logs</button>
+          <button class="dbg-btn" data-fn="quests">Quests</button>
+          <button class="dbg-btn" data-fn="habits">Habits</button>
+          <button class="dbg-btn" data-fn="mood">Mood</button>
+          <button class="dbg-btn" data-fn="ranking">Ranking</button>
+          <button class="dbg-btn" data-fn="season">Season</button>
+          <button class="dbg-btn" data-fn="party">Party</button>
+          <button class="dbg-btn" data-fn="guild">Guild</button>
+        </div>
+
+        <!-- Reload All -->
+        <div class="dbg-section">
+          <h4>Actions</h4>
+          <button class="dbg-btn run" id="dbg-reload-all">🔄 Reload All Data</button>
+          <button class="dbg-btn run" id="dbg-check-tables">📋 List Tables Access</button>
+          <button class="dbg-btn" id="dbg-clear-log" style="color:#e74c3c;border-color:#e74c3c;">🗑 Clear Log</button>
+        </div>
+
+        <!-- Log Output -->
+        <div class="dbg-section">
+          <h4>Log Output</h4>
+          <div id="dbg-log">รอคำสั่ง...</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      // ─── Helpers ─────────────────────────────────────────
+      let logEl;
+      function getLog() { return logEl || (logEl = document.getElementById('dbg-log')); }
+
+      function log(msg, type = '') {
+        const el = getLog();
+        const ts = new Date().toLocaleTimeString('th-TH');
+        const color = type === 'err' ? '#ff6b6b' : type === 'ok' ? '#2ecc71' : '#a0ffb0';
+        el.innerHTML += `<span style="color:#666;">[${ts}]</span> <span style="color:${color};">${escHtml(msg)}</span>\n`;
+        el.scrollTop = el.scrollHeight;
+      }
+
+      function logObj(label, obj) {
+        log(`── ${label} ──`);
+        if (!obj) { log('  NULL / undefined', 'err'); return; }
+        try {
+          const txt = JSON.stringify(obj, null, 2);
+          log(txt.slice(0, 1200) + (txt.length > 1200 ? '\n...(ตัด)' : ''));
+        } catch(e) { log('  (serialize error)', 'err'); }
+      }
+
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function kv(key, val) {
+        return `<div class="dbg-kv"><span class="dbg-key">${escHtml(key)}:</span> <span class="dbg-val">${escHtml(String(val ?? 'null'))}</span></div>`;
+      }
+
+      // ─── Render Auth State ────────────────────────────────
+      function renderAuthState() {
+        const el = document.getElementById('dbg-auth-state');
+        if (!el) return;
+        el.innerHTML =
+          kv('user.id',    user?.id ?? 'NULL') +
+          kv('user.email', user?.email ?? 'NULL') +
+          kv('profile.display_name', profile?.display_name ?? 'NULL') +
+          kv('profile.onboarding_complete', profile?.onboarding_complete ?? 'NULL') +
+          kv('profile.is_admin', profile?.is_admin ?? 'NULL');
+      }
+
+      function renderStoreState() {
+        const el = document.getElementById('dbg-store-state');
+        if (!el) return;
+        const u = store.get(STATE.USER);
+        const p = store.get(STATE.PROFILE);
+        el.innerHTML =
+          kv('store.USER.id',    u?.id?.slice(0,8) ?? 'NULL') +
+          kv('store.USER.email', u?.email ?? 'NULL') +
+          kv('store.PROFILE.display_name', p?.display_name ?? 'NULL') +
+          kv('store.SIDEBAR_OPEN', store.get(STATE.SIDEBAR_OPEN) ?? 'NULL');
+      }
+
+      // ─── Fetch test map ───────────────────────────────────
+      const fetchTests = {
+        profile: async () => {
+          const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+          return { data, error };
+        },
+        role: async () => {
+          const { data, error } = await supabase.from('user_roles').select('role_id, mode, roles(name, key, color)').eq('user_id', user.id).limit(1).maybeSingle();
+          return { data, error };
+        },
+        exp: async () => {
+          const { data, error } = await supabase.from('exp_logs').select('amount').eq('user_id', user.id);
+          const total = data ? data.reduce((s,r) => s + (r.amount||0), 0) : 0;
+          return { data: { rows: data?.length ?? 0, total_exp: total }, error };
+        },
+        quests: async () => {
+          const { data, error } = await supabase.from('user_quests').select('id, status, quests(id,title,type,exp_reward)').eq('user_id', user.id).in('status',['accepted','completed']).limit(5);
+          return { data, error };
+        },
+        habits: async () => {
+          const { data, error } = await supabase.from('habits').select('id, title, is_active').eq('user_id', user.id).limit(10);
+          return { data, error };
+        },
+        mood: async () => {
+          const today = new Date().toISOString().split('T')[0];
+          const { data, error } = await supabase.from('mood_logs').select('mood, logged_date').eq('user_id', user.id).eq('logged_date', today).maybeSingle();
+          return { data, error };
+        },
+        ranking: async () => {
+          const { data, error } = await supabase.from('exp_logs').select('user_id, amount').limit(100);
+          return { data: { rows: data?.length ?? 0, sample: data?.slice(0,3) }, error };
+        },
+        season: async () => {
+          const { data, error } = await supabase.from('seasons').select('*').eq('is_active', true).maybeSingle();
+          return { data, error };
+        },
+        party: async () => {
+          const { data, error } = await supabase.from('party_members').select('party_id, parties(id,name)').eq('user_id', user.id).maybeSingle();
+          return { data, error };
+        },
+        guild: async () => {
+          const { data, error } = await supabase.from('guild_members').select('role, guilds(id,name,member_count,total_exp)').eq('user_id', user.id).maybeSingle();
+          return { data, error };
+        },
+      };
+
+      async function runFetch(name, btn) {
+        const fn = fetchTests[name];
+        if (!fn) return;
+        btn.classList.remove('ok','err');
+        btn.classList.add('run');
+        btn.textContent = name + ' ⏳';
+        log(`เริ่ม fetch: ${name}...`);
+        try {
+          const result = await fn();
+          if (result.error) {
+            log(`${name} ERROR: ${result.error.message || JSON.stringify(result.error)}`, 'err');
+            btn.classList.remove('run'); btn.classList.add('err');
+            btn.textContent = name + ' ✗';
+          } else {
+            logObj(name + ' DATA', result.data);
+            btn.classList.remove('run'); btn.classList.add('ok');
+            btn.textContent = name + ' ✓';
+          }
+        } catch(e) {
+          log(`${name} EXCEPTION: ${e.message}`, 'err');
+          btn.classList.remove('run'); btn.classList.add('err');
+          btn.textContent = name + ' ✗';
+        }
+      }
+
+      async function checkTables() {
+        const tables = ['profiles','user_roles','roles','exp_logs','user_quests','quests','habits','habit_logs','mood_logs','exp_logs','seasons','party_members','parties','guild_members','guilds'];
+        log('── ตรวจสอบสิทธิ์ access แต่ละ table ──');
+        for (const t of tables) {
+          try {
+            const { data, error } = await supabase.from(t).select('id').limit(1);
+            if (error) log(`  ${t}: ✗ ${error.message}`, 'err');
+            else log(`  ${t}: ✓ (${data?.length ?? 0} rows)`, 'ok');
+          } catch(e) {
+            log(`  ${t}: EXCEPTION ${e.message}`, 'err');
+          }
+        }
+      }
+
+      // ─── Toggle panel ─────────────────────────────────────
+      fab.addEventListener('click', () => {
+        overlay.classList.add('open');
+        renderAuthState();
+        renderStoreState();
+        getLog(); // init ref
+      });
+
+      document.getElementById('dbg-close-btn').addEventListener('click', () => {
+        overlay.classList.remove('open');
+      });
+
+      // ─── Fetch test buttons ───────────────────────────────
+      overlay.querySelectorAll('[data-fn]').forEach(btn => {
+        btn.addEventListener('click', () => runFetch(btn.dataset.fn, btn));
+      });
+
+      document.getElementById('dbg-reload-all').addEventListener('click', async () => {
+        log('🔄 กำลัง Reload all data...');
+        for (const [name] of Object.entries(fetchTests)) {
+          const btn = overlay.querySelector(`[data-fn="${name}"]`);
+          if (btn) await runFetch(name, btn);
+        }
+        log('✅ เสร็จ', 'ok');
+      });
+
+      document.getElementById('dbg-check-tables').addEventListener('click', checkTables);
+
+      document.getElementById('dbg-clear-log').addEventListener('click', () => {
+        getLog().innerHTML = '';
+      });
+
+    })();
+    /* ── END DEBUG PANEL ── */
 
     /* ── ROLE GUARD — ถ้ายังไม่มี role ให้กลับ onboarding ── */
     {
