@@ -206,6 +206,52 @@
   --progress-fill:   var(--color-gold);
   --progress-height: 6px;
   --progress-radius: var(--radius-pill);
+
+  /* ----------------------------------------------------------
+     LEGACY ALIASES — short names used in existing HTML files
+     Maps old shorthand names → full token names above.
+     Do not use in new code — use --color-* names instead.
+  ---------------------------------------------------------- */
+  --void:         var(--color-void);
+  --surf1:        var(--color-surface-1);
+  --surf2:        var(--color-surface-2);
+  --surf3:        var(--color-surface-3);
+  --border:       var(--color-border);
+  --border-warm:  #3a3020;
+  --border-glow:  var(--color-border-glow);
+  --gold-dim:     var(--color-gold-dim);
+  --gold:         var(--color-gold);
+  --gold-bright:  var(--color-gold-bright);
+  --gold-glow:    var(--color-gold-glow);
+  --silver-dim:   var(--color-silver-dim);
+  --silver:       var(--color-silver);
+  --silver-bright:var(--color-silver-bright);
+  --red:          var(--color-red);
+  --red-bright:   var(--color-red-bright);
+  --green:        var(--color-green);
+  --green-bright: var(--color-green-bright);
+  --blue-bright:  var(--color-blue-bright);
+  --txt:          var(--color-text-primary);
+  --txt-sec:      var(--color-text-secondary);
+  --txt-muted:    var(--color-text-muted);
+  --dur-fast:     var(--duration-fast);
+  --dur-base:     var(--duration-base);
+  --dur-slow:     var(--duration-slow);
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Border radius aliases */
+  --r-sm:         var(--radius-sm);
+  --r-md:         var(--radius-md);
+  --r-lg:         var(--radius-lg);
+  --r-xl:         var(--radius-xl);
+  --r-pill:       var(--radius-pill);
+
+  /* Sidebar aliases */
+  --sidebar-w:    var(--sidebar-width);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.7);
+  --shadow-xl:    0 24px 64px rgba(0,0,0,.75);
+  --glow-gold:    0 0 24px rgba(201,136,42,.5), 0 0 64px rgba(201,136,42,.16);
+  --glow-gold-sm: 0 0 10px rgba(201,136,42,.5);
 }
 
 
