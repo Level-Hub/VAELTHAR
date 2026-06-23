@@ -165,7 +165,7 @@ function _build(profile) {
 
   /* Bind logout */
   sidebar.querySelector('#sidebar-logout').addEventListener('click', async () => {
-    const { confirm } = await import('./modal.js');
+    const { confirm } = await import('/modal.js');
     const ok = await confirm('Sign Out?', 'You will be returned to the login page.', {
       confirmLabel: 'Sign Out',
       danger: true,

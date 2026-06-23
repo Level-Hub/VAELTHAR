@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Quests — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/design-tokens.css" />
+  <style>
+    *,*::before,*::after {
+      box-sizing:border-box; margin:0; padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    html { font-size:16px; scroll-behavior:smooth; }
+    body {
+      background:var(--void); color:var(--txt);
+      font-family:var(--font-body); font-size:.9375rem;
+      line-height:1.6; min-height:100dvh;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+    }
+    img,svg { display:block; max-width:100%; }
+    a { color:var(--gold); text-decoration:none; }
+    button { font-family:var(--font-body); cursor:pointer; border:none; background:none; }
+
+    /* ── ลบ focus สีฟ้า ── */
+    *:focus { outline:none; }
+    *:focus-visible { outline:1px solid var(--gold-dim); outline-offset:3px; border-radius:6px; }
+
+    /* ── LAYOUT ── */
+    #sidebar-root { flex-shrink:0; }
+    .main-content {
+      flex:1; margin-left:var(--sidebar-w);
+      padding:2rem 2rem 4rem;
+      max-width:1200px;
+      transition:margin-left var(--dur-base) var(--ease-out);
+    }
+    .main-content.sidebar-collapsed { margin-left:var(--sidebar-collapsed); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display:flex; align-items:flex-start;
+      justify-content:space-between; gap:1rem;
+      margin-bottom:2rem; flex-wrap:wrap;
+    }
+    .page-label {
+      font-family:var(--font-display); font-size:.6875rem;
+      letter-spacing:.18em; text-transform:uppercase;
+      color:var(--txt-muted); margin-bottom:.25rem;
+    }
+    .page-title {
+      font-family:var(--font-display); font-size:1.5rem;
+      font-weight:700; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--txt);
+    }
+    .page-sub {
+      font-size:.8125rem; color:var(--txt-muted); margin-top:.2rem;
+    }
+
+    /* ── ROLE BANNER ── */
+    .role-banner {
+      display:flex; align-items:center; gap:1rem;
+      background:var(--surf1); border:1px solid var(--border-glow);
+      border-radius:12px; padding:1rem 1.25rem;
+      margin-bottom:1.75rem; position:relative; overflow:hidden;
+    }
+    .role-banner::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 0% 50%, rgba(201,136,42,.06) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .role-icon {
+      width:44px; height:44px; border-radius:10px; flex-shrink:0;
+      background:rgba(201,136,42,.1); border:1px solid var(--gold-dim);
+      color:var(--gold-bright);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .role-info { flex:1; min-width:0; }
+    .role-name {
+      font-family:var(--font-display); font-size:.95rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--txt);
+      margin-bottom:.15rem;
+    }
+    .role-meta { font-size:.78rem; color:var(--txt-sec); }
+    .role-mode-pill {
+      display:inline-flex; align-items:center; gap:.35rem;
+      font-family:var(--font-data); font-size:.7rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:.25rem .7rem; border-radius:999px;
+      background:rgba(201,136,42,.1); border:1px solid var(--gold-dim);
+      color:var(--gold-bright); flex-shrink:0;
+    }
+    .role-mode-pill.random { background:rgba(100,68,200,.12); border-color:rgba(160,109,224,.3); color:#a06de0; }
+
+    /* ── TABS ── */
+    .tab-row {
+      display:flex; gap:.25rem;
+      border-bottom:1px solid var(--border);
+      margin-bottom:1.75rem;
+    }
+    .tab-btn {
+      padding:.6rem 1.1rem; border-radius:8px 8px 0 0;
+      font-size:.78rem; font-weight:600; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--txt-muted);
+      border:1px solid transparent; border-bottom:none;
+      position:relative; bottom:-1px;
+      transition:color var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast);
+      display:flex; align-items:center; gap:.45rem;
+    }
+    .tab-btn:hover { color:var(--txt-sec); background:var(--surf2); }
+    .tab-btn.active {
+      color:var(--gold-bright); background:var(--void);
+      border-color:var(--border); border-bottom-color:var(--void);
+    }
+    .tab-count {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:18px; height:18px; border-radius:999px;
+      font-family:var(--font-data); font-size:.65rem; font-weight:700;
+      background:var(--surf3); color:var(--txt-muted);
+    }
+    .tab-btn.active .tab-count { background:rgba(201,136,42,.15); color:var(--gold-bright); }
+
+    /* ── TAB PANELS ── */
+    .tab-panel { display:none; }
+    .tab-panel.active { display:block; }
+
+    /* ── QUEST GRID ── */
+    .quest-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+      gap:1rem;
+    }
+
+    /* ── QUEST CARD ── */
+    .quest-card {
+      background:var(--surf1); border:1px solid var(--border);
+      border-radius:12px; padding:1.25rem;
+      position:relative; overflow:hidden;
+      transition:border-color var(--dur-base) var(--ease-out),
+                 transform var(--dur-fast) var(--ease-out);
+      cursor:default;
+    }
+    .quest-card:hover { border-color:var(--border-glow); transform:translateY(-1px); }
+    .quest-card.status-accepted { border-color:rgba(201,136,42,.35); }
+    .quest-card.status-submitted { border-color:rgba(90,173,221,.35); }
+    .quest-card.status-approved {
+      border-color:rgba(39,174,96,.35);
+      opacity:.7;
+    }
+
+    /* accent bar left */
+    .quest-card::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:var(--border); border-radius:12px 0 0 12px;
+      transition:background var(--dur-base);
+    }
+    .quest-card[data-type="daily"]::before   { background:var(--gold-dim); }
+    .quest-card[data-type="weekly"]::before  { background:#4a7ae0; }
+    .quest-card[data-type="special"]::before { background:#9c42c8; }
+
+    .quest-card-top {
+      display:flex; align-items:flex-start;
+      justify-content:space-between; gap:.75rem; margin-bottom:.85rem;
+    }
+    .quest-type-tag {
+      display:inline-flex; align-items:center; gap:.3rem;
+      font-family:var(--font-data); font-size:.64rem; font-weight:700;
+      letter-spacing:.1em; text-transform:uppercase;
+      padding:.18rem .55rem; border-radius:4px;
+    }
+    .quest-type-tag.daily  { background:rgba(201,136,42,.1);  color:var(--gold);    border:1px solid rgba(201,136,42,.2); }
+    .quest-type-tag.weekly { background:rgba(74,122,224,.1);  color:#7a9ced;         border:1px solid rgba(74,122,224,.2); }
+    .quest-type-tag.special{ background:rgba(156,66,200,.1);  color:#c07ae0;        border:1px solid rgba(156,66,200,.2); }
+
+    .quest-status-tag {
+      display:inline-flex; align-items:center; gap:.3rem;
+      font-family:var(--font-data); font-size:.64rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:.18rem .55rem; border-radius:4px;
+    }
+    .quest-status-tag.accepted  { background:rgba(201,136,42,.1);  color:var(--gold-bright); border:1px solid rgba(201,136,42,.2); }
+    .quest-status-tag.submitted { background:rgba(90,173,221,.1);  color:#5aaddd;             border:1px solid rgba(90,173,221,.2); }
+    .quest-status-tag.approved  { background:rgba(39,174,96,.1);   color:var(--green-bright); border:1px solid rgba(39,174,96,.2); }
+    .quest-status-tag.rejected  { background:rgba(235,87,87,.1);   color:#eb5757;             border:1px solid rgba(235,87,87,.2); }
+
+    .quest-title {
+      font-family:var(--font-display); font-size:.95rem; font-weight:700;
+      letter-spacing:.03em; color:var(--txt); margin-bottom:.4rem;
+      line-height:1.3;
+    }
+    .quest-desc {
+      font-size:.8125rem; color:var(--txt-sec); line-height:1.65;
+      margin-bottom:1rem;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    .quest-card-foot {
+      display:flex; align-items:center;
+      justify-content:space-between; gap:.5rem;
+    }
+    .quest-exp {
+      display:flex; align-items:center; gap:.35rem;
+      font-family:var(--font-data); font-size:.85rem; font-weight:700;
+      color:var(--gold-bright); letter-spacing:.04em;
+    }
+    .quest-exp svg { color:var(--gold); }
+
+    .quest-proof-badge {
+      display:inline-flex; align-items:center; gap:.3rem;
+      font-size:.7rem; color:var(--txt-muted);
+    }
+
+    /* CTA buttons */
+    .btn-accept {
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-family:var(--font-body); font-weight:600; font-size:.78rem;
+      letter-spacing:.06em; text-transform:uppercase;
+      padding:.45rem 1rem; border-radius:8px;
+      background:var(--gold); color:#07070b; border:none;
+      transition:background var(--dur-fast), box-shadow var(--dur-fast), transform var(--dur-fast);
+      cursor:pointer; white-space:nowrap;
+    }
+    .btn-accept:hover { background:var(--gold-bright); box-shadow:var(--glow-gold-sm); }
+    .btn-accept:active { transform:scale(.97); }
+    .btn-accept:disabled { opacity:.45; cursor:not-allowed; pointer-events:none; }
+
+    .btn-submit-proof {
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-family:var(--font-body); font-weight:600; font-size:.78rem;
+      letter-spacing:.06em; text-transform:uppercase;
+      padding:.45rem 1rem; border-radius:8px;
+      background:transparent; color:var(--gold-bright);
+      border:1px solid var(--gold-dim);
+      transition:background var(--dur-fast), border-color var(--dur-fast);
+      cursor:pointer; white-space:nowrap;
+    }
+    .btn-submit-proof:hover { background:rgba(201,136,42,.08); border-color:var(--gold); }
+    .btn-submit-proof:active { transform:scale(.97); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:4rem 2rem; text-align:center; color:var(--txt-muted);
+      gap:1rem;
+    }
+    .empty-state svg { opacity:.25; }
+    .empty-title {
+      font-family:var(--font-display); font-size:1rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--txt-sec);
+    }
+    .empty-sub { font-size:.8125rem; color:var(--txt-muted); max-width:280px; }
+
+    /* ── SKELETON LOADER ── */
+    .skeleton {
+      background:linear-gradient(90deg, var(--surf2) 25%, var(--surf3) 50%, var(--surf2) 75%);
+      background-size:200% 100%;
+      animation:shimmer 1.4s infinite;
+      border-radius:6px;
+    }
+    @keyframes shimmer { to { background-position:-200% 0; } }
+    .skel-card {
+      background:var(--surf1); border:1px solid var(--border);
+      border-radius:12px; padding:1.25rem;
+    }
+    .skel-line { height:12px; margin-bottom:8px; }
+    .skel-line.w60 { width:60%; }
+    .skel-line.w80 { width:80%; }
+    .skel-line.w40 { width:40%; }
+
+    /* ── PROOF MODAL internals ── */
+    .proof-upload-area {
+      border:1.5px dashed var(--border);
+      border-radius:10px; padding:2rem 1.5rem;
+      text-align:center; cursor:pointer;
+      transition:border-color var(--dur-base), background var(--dur-base);
+      margin-bottom:1rem;
+    }
+    .proof-upload-area:hover,
+    .proof-upload-area.drag-over {
+      border-color:var(--gold-dim); background:rgba(201,136,42,.04);
+    }
+    .proof-upload-area svg { margin:0 auto .75rem; color:var(--txt-muted); opacity:.5; }
+    .proof-upload-label { font-size:.85rem; color:var(--txt-sec); }
+    .proof-upload-sub   { font-size:.75rem; color:var(--txt-muted); margin-top:.3rem; }
+    .proof-preview {
+      width:100%; border-radius:8px; object-fit:cover;
+      max-height:200px; display:none; margin-bottom:1rem;
+    }
+    .proof-preview.show { display:block; }
+    .field-input {
+      width:100%; background:var(--surf2); border:1px solid var(--border);
+      border-radius:8px; padding:.65rem .9rem;
+      font-family:var(--font-body); font-size:.875rem; color:var(--txt);
+      transition:border-color var(--dur-fast);
+      resize:none;
+    }
+    .field-input:focus { border-color:var(--gold-dim); }
+    .field-label {
+      font-size:.75rem; font-weight:600; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--txt-muted); margin-bottom:.5rem; display:block;
+    }
+    .field-group { margin-bottom:1rem; }
+
+    /* ── LOADING SPINNER on buttons ── */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spin { animation:spin .7s linear infinite; display:inline-block; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width:640px) {
+      .main-content { margin-left:0; padding:1.25rem 1rem 5rem; }
+      .quest-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="sidebar-root"></div>
+
+<main class="main-content" id="main-content">
+
+  <div class="page-header">
+    <div>
+      <div class="page-label">Game Loop</div>
+      <h1 class="page-title">Quests</h1>
+      <p class="page-sub" id="questDateLabel"></p>
+    </div>
+  </div>
+
+  <!-- Role Banner -->
+  <div class="role-banner" id="roleBanner">
+    <div class="role-icon" id="roleIcon"></div>
+    <div class="role-info">
+      <div class="role-name" id="roleName">กำลังโหลด...</div>
+      <div class="role-meta" id="roleMeta"></div>
+    </div>
+    <div class="role-mode-pill" id="roleModePill"></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-row" role="tablist">
+    <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="available" id="tab-available">
+      <span id="ic-tab-quest"></span>
+      Available
+      <span class="tab-count" id="cnt-available">0</span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="active" id="tab-active">
+      <span id="ic-tab-sword"></span>
+      Active
+      <span class="tab-count" id="cnt-active">0</span>
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="history" id="tab-history">
+      <span id="ic-tab-scroll"></span>
+      History
+    </button>
+  </div>
+
+  <!-- Available Quests -->
+  <div class="tab-panel active" id="panel-available">
+    <div class="quest-grid" id="grid-available">
+      <!-- skeleton -->
+      ${[1,2,3].map(() => `
+        <div class="skel-card">
+          <div class="skel-line skeleton w40" style="margin-bottom:12px"></div>
+          <div class="skel-line skeleton w80"></div>
+          <div class="skel-line skeleton w60"></div>
+          <div class="skel-line skeleton w40" style="margin-top:16px"></div>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <!-- Active Quests -->
+  <div class="tab-panel" id="panel-active">
+    <div class="quest-grid" id="grid-active"></div>
+  </div>
+
+  <!-- History -->
+  <div class="tab-panel" id="panel-history">
+    <div class="quest-grid" id="grid-history"></div>
+  </div>
+
+</main>
+
+<script type="module">
+  import { requireAuth }   from '/auth.js';
+  import { supabase }      from '/api.js';
+  import { icon }          from '/icons.js';
+  import { initSidebar }   from '/sidebar.js';
+  import { toast }         from '/toast.js';
+  import { modal }         from '/modal.js';
+  import { store, STATE }  from '/storage.js';
+
+  /* ── AUTH GUARD ── */
+  const { user, profile } = await requireAuth();
+  if (!user) throw new Error('not authenticated');
+
+  await initSidebar();
+
+  /* ── sidebar collapse sync ── */
+  store.subscribe?.(STATE.SIDEBAR_COLLAPSED, (val) => {
+    document.getElementById('main-content').classList.toggle('sidebar-collapsed', val);
+  });
+
+  /* ── DATE LABEL ── */
+  document.getElementById('questDateLabel').textContent =
+    new Date().toLocaleDateString('th-TH', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+  /* ── ICONS ── */
+  document.getElementById('ic-tab-quest').innerHTML  = icon('quest', 14);
+  document.getElementById('ic-tab-sword').innerHTML  = icon('sword', 14);
+  document.getElementById('ic-tab-scroll').innerHTML = icon('scroll', 14);
+
+  /* ══════════════════════════════════════════
+     LOAD ROLE
+  ══════════════════════════════════════════ */
+  let userRole = null;
+
+  async function loadRole() {
+    const { data: activeSeason } = await supabase
+      .from('seasons').select('id').eq('is_active', true).maybeSingle();
+
+    if (!activeSeason) {
+      document.getElementById('roleName').textContent = 'ไม่มี Season ที่ Active';
+      document.getElementById('roleMeta').textContent = '';
+      document.getElementById('roleModePill').textContent = '';
+      document.getElementById('roleIcon').innerHTML = icon('season', 20);
+      return;
+    }
+
+    const { data: ur } = await supabase
+      .from('user_roles')
+      .select('mode, role_id, roles(name, key)')
+      .eq('user_id', user.id)
+      .eq('season_id', activeSeason.id)
+      .maybeSingle();
+
+    userRole = ur;
+    const roleIconEl   = document.getElementById('roleIcon');
+    const roleNameEl   = document.getElementById('roleName');
+    const roleMetaEl   = document.getElementById('roleMeta');
+    const modePillEl   = document.getElementById('roleModePill');
+
+    if (!ur) {
+      roleNameEl.textContent = 'ยังไม่ได้เลือก Role';
+      roleMetaEl.textContent = 'ไปที่หน้า Role เพื่อเริ่มต้น';
+      roleIconEl.innerHTML   = icon('crown', 20);
+      modePillEl.textContent = '';
+      return;
+    }
+
+    const roleName = ur.roles?.name || 'Unknown Role';
+    const roleKey  = ur.roles?.key  || 'quest';
+    roleNameEl.textContent = roleName;
+    roleMetaEl.textContent = `Quest ที่ได้จะตรงกับ Role: ${roleName}`;
+    roleIconEl.innerHTML   = icon(roleKey, 20);
+
+    const isRandom = ur.mode === 'random';
+    modePillEl.innerHTML  = icon(isRandom ? 'shuffle' : 'crown', 12) + (isRandom ? 'Random +25% EXP' : 'Choose Mode');
+    modePillEl.className  = 'role-mode-pill' + (isRandom ? ' random' : '');
+  }
+
+  /* ══════════════════════════════════════════
+     LOAD QUESTS
+  ══════════════════════════════════════════ */
+  let allQuests     = [];   /* available (not accepted) */
+  let activeQuests  = [];   /* accepted / submitted */
+  let historyQuests = [];   /* approved / rejected */
+
+  async function loadQuests() {
+    /* 1. Quests for this role (or all if no role) */
+    let qQuery = supabase.from('quests').select('*').eq('is_active', true);
+    if (userRole?.role_id) {
+      qQuery = qQuery.or(`role_id.eq.${userRole.role_id},role_id.is.null`);
+    }
+    const { data: quests, error: qErr } = await qQuery;
+    if (qErr) { console.error(qErr); return; }
+
+    /* 2. user_quests for this user */
+    const { data: userQuests } = await supabase
+      .from('user_quests')
+      .select('*')
+      .eq('user_id', user.id);
+
+    const uqMap = {};
+    (userQuests || []).forEach(uq => { uqMap[uq.quest_id] = uq; });
+
+    /* 3. Partition */
+    allQuests     = [];
+    activeQuests  = [];
+    historyQuests = [];
+
+    (quests || []).forEach(q => {
+      const uq = uqMap[q.id];
+      if (!uq) {
+        allQuests.push({ quest: q, uq: null });
+      } else if (uq.status === 'accepted' || uq.status === 'submitted') {
+        activeQuests.push({ quest: q, uq });
+      } else {
+        historyQuests.push({ quest: q, uq });
+      }
+    });
+
+    renderGrid('available', allQuests);
+    renderGrid('active', activeQuests);
+    renderGrid('history', historyQuests);
+
+    document.getElementById('cnt-available').textContent = allQuests.length;
+    document.getElementById('cnt-active').textContent    = activeQuests.length;
+  }
+
+  /* ══════════════════════════════════════════
+     RENDER GRID
+  ══════════════════════════════════════════ */
+  function renderGrid(tab, items) {
+    const grid = document.getElementById(`grid-${tab}`);
+
+    if (!items.length) {
+      const msgs = {
+        available: { title: 'Quest หมดแล้ว', sub: 'ทำ Quest ที่ Active อยู่ให้เสร็จก่อน หรือรอ Quest ใหม่' },
+        active:    { title: 'ไม่มี Quest ที่กำลังทำ', sub: 'รับ Quest จากแท็บ Available ได้เลย' },
+        history:   { title: 'ยังไม่มีประวัติ', sub: 'Quest ที่ผ่านการตรวจสอบแล้วจะปรากฏที่นี่' },
+      };
+      const m = msgs[tab];
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          ${icon('quest', 48)}
+          <div class="empty-title">${m.title}</div>
+          <div class="empty-sub">${m.sub}</div>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = items.map(({ quest: q, uq }) => buildCard(q, uq)).join('');
+  }
+
+  function buildCard(q, uq) {
+    const typeLabel = { daily:'Daily', weekly:'Weekly', special:'Special' };
+    const statusLabel = { accepted:'กำลังทำ', submitted:'รอตรวจสอบ', approved:'ผ่านแล้ว', rejected:'ไม่ผ่าน' };
+
+    const statusTag = uq ? `
+      <span class="quest-status-tag ${uq.status}">
+        ${icon(uq.status === 'approved' ? 'check' : uq.status === 'rejected' ? 'close' : uq.status === 'submitted' ? 'clock' : 'sword', 11)}
+        ${statusLabel[uq.status] || uq.status}
+      </span>` : '';
+
+    const expMultiplier = (userRole?.mode === 'random') ? 1.25 : 1;
+    const displayExp    = Math.round(q.exp_reward * expMultiplier);
+
+    let actionBtn = '';
+    if (!uq) {
+      actionBtn = `<button class="btn-accept" data-qid="${q.id}" onclick="acceptQuest('${q.id}')">
+        ${icon('sword', 13)} รับ Quest
+      </button>`;
+    } else if (uq.status === 'accepted' && q.requires_proof) {
+      actionBtn = `<button class="btn-submit-proof" data-qid="${q.id}" onclick="openProofModal('${q.id}', '${q.title.replace(/'/g,"\\'")}')">
+        ${icon('upload', 13)} ส่งหลักฐาน
+      </button>`;
+    } else if (uq.status === 'accepted' && !q.requires_proof) {
+      actionBtn = `<button class="btn-accept" data-qid="${q.id}" onclick="completeQuest('${q.id}')">
+        ${icon('check', 13)} ทำเสร็จแล้ว
+      </button>`;
+    }
+
+    return `
+      <div class="quest-card status-${uq?.status || 'none'}" data-type="${q.type}">
+        <div class="quest-card-top">
+          <span class="quest-type-tag ${q.type}">${typeLabel[q.type] || q.type}</span>
+          ${statusTag}
+        </div>
+        <div class="quest-title">${q.title}</div>
+        <div class="quest-desc">${q.description || ''}</div>
+        <div class="quest-card-foot">
+          <div class="quest-exp">
+            ${icon('exp', 14)}
+            +${displayExp.toLocaleString()} EXP
+            ${userRole?.mode === 'random' ? `<span style="font-size:.65rem;color:var(--txt-muted);">(x1.25)</span>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:.5rem;">
+            ${q.requires_proof ? `<span class="quest-proof-badge">${icon('camera', 13)} ต้องมีหลักฐาน</span>` : ''}
+            ${actionBtn}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ══════════════════════════════════════════
+     ACCEPT QUEST
+  ══════════════════════════════════════════ */
+  window.acceptQuest = async function(questId) {
+    const btn = document.querySelector(`[data-qid="${questId}"].btn-accept`);
+    if (btn) { btn.disabled = true; btn.innerHTML = `<span class="spin">${icon('settings', 13)}</span> กำลังรับ...`; }
+
+    const { error } = await supabase.from('user_quests').insert({
+      user_id:     user.id,
+      quest_id:    questId,
+      status:      'accepted',
+      accepted_at: new Date().toISOString(),
+    });
+
+    if (error) {
+      toast.error('รับ Quest ไม่สำเร็จ', error.message);
+      if (btn) { btn.disabled = false; btn.innerHTML = `${icon('sword', 13)} รับ Quest`; }
+      return;
+    }
+
+    toast.success('รับ Quest แล้ว', 'เริ่มทำได้เลย!');
+    await loadQuests();
+    /* Switch to Active tab */
+    switchTab('active');
+  };
+
+  /* ══════════════════════════════════════════
+     COMPLETE QUEST (no proof required)
+  ══════════════════════════════════════════ */
+  window.completeQuest = async function(questId) {
+    const confirmed = await modal.confirm(
+      'ยืนยันการทำ Quest เสร็จ',
+      'Quest นี้ไม่ต้องการหลักฐาน — ยืนยันว่าทำเสร็จแล้ว?',
+      { confirmLabel:'ยืนยัน', cancelLabel:'ยกเลิก' }
+    );
+    if (!confirmed) return;
+
+    const btn = document.querySelector(`[data-qid="${questId}"].btn-accept`);
+    if (btn) { btn.disabled = true; }
+
+    /* Update status */
+    const { error: uErr } = await supabase
+      .from('user_quests')
+      .update({ status: 'submitted', completed_at: new Date().toISOString() })
+      .eq('user_id', user.id).eq('quest_id', questId);
+
+    if (uErr) { toast.error('เกิดข้อผิดพลาด', uErr.message); return; }
+
+    /* Grant EXP */
+    const questItem = [...allQuests, ...activeQuests].find(i => i.quest.id === questId);
+    if (questItem) {
+      const expMultiplier = (userRole?.mode === 'random') ? 1.25 : 1;
+      const expAmount     = Math.round(questItem.quest.exp_reward * expMultiplier);
+
+      await supabase.from('exp_logs').insert({
+        user_id:      user.id,
+        amount:       expAmount,
+        source:       'quest',
+        reference_id: questId,
+        note:         questItem.quest.title,
+      });
+
+      toast.questComplete(questItem.quest.title, expAmount);
+    }
+
+    await loadQuests();
+  };
+
+  /* ══════════════════════════════════════════
+     PROOF MODAL
+  ══════════════════════════════════════════ */
+  window.openProofModal = async function(questId, questTitle) {
+    let selectedFile = null;
+
+    await modal.open({
+      title:   'ส่งหลักฐาน Quest',
+      subtitle: questTitle,
+      iconName: 'upload',
+      size:    'md',
+      renderContent(container) {
+        container.innerHTML = `
+          <div class="proof-upload-area" id="dropZone">
+            ${icon('upload', 32)}
+            <div class="proof-upload-label">คลิกหรือลากไฟล์มาวางที่นี่</div>
+            <div class="proof-upload-sub">รองรับ JPG, PNG, GIF ขนาดไม่เกิน 5MB</div>
+            <input type="file" id="proofFile" accept="image/*" style="display:none" />
+          </div>
+          <img id="proofPreview" class="proof-preview" alt="Preview" />
+          <div class="field-group">
+            <label class="field-label" for="proofNote">หมายเหตุ (ไม่บังคับ)</label>
+            <textarea class="field-input" id="proofNote" rows="2" placeholder="อธิบายเพิ่มเติมเกี่ยวกับสิ่งที่ทำ..."></textarea>
+          </div>
+        `;
+
+        const dropZone   = container.querySelector('#dropZone');
+        const fileInput  = container.querySelector('#proofFile');
+        const preview    = container.querySelector('#proofPreview');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+        dropZone.addEventListener('drop', e => {
+          e.preventDefault(); dropZone.classList.remove('drag-over');
+          const f = e.dataTransfer.files[0];
+          if (f) handleFile(f);
+        });
+        fileInput.addEventListener('change', () => { if (fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+        function handleFile(file) {
+          if (file.size > 5 * 1024 * 1024) { toast.warning('ไฟล์ใหญ่เกิน 5MB'); return; }
+          selectedFile = file;
+          const reader = new FileReader();
+          reader.onload = e => { preview.src = e.target.result; preview.classList.add('show'); };
+          reader.readAsDataURL(file);
+        }
+      },
+      actions: [
+        { label:'ยกเลิก',     style:'secondary', value:'cancel' },
+        { label:'ส่งหลักฐาน', style:'primary',   value:'submit' },
+      ],
+      async onAction(value) {
+        if (value !== 'submit') return;
+
+        const note = document.getElementById('proofNote')?.value?.trim() || '';
+        let proofUrl = null;
+
+        if (selectedFile) {
+          const path = `${user.id}/${questId}_${Date.now()}`;
+          const { error: upErr } = await supabase.storage
+            .from('quest-proofs')
+            .upload(path, selectedFile, { upsert: true });
+          if (upErr) { toast.error('อัพโหลดรูปไม่สำเร็จ', upErr.message); return; }
+          const { data: urlData } = supabase.storage.from('quest-proofs').getPublicUrl(path);
+          proofUrl = urlData.publicUrl;
+        }
+
+        const { error } = await supabase
+          .from('user_quests')
+          .update({
+            status:       'submitted',
+            proof_url:    proofUrl,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('user_id', user.id).eq('quest_id', questId);
+
+        if (error) { toast.error('ส่งหลักฐานไม่สำเร็จ', error.message); return; }
+
+        toast.success('ส่งหลักฐานแล้ว', 'Admin จะตรวจสอบและอนุมัติ EXP ให้คุณ');
+        await loadQuests();
+      },
+    });
+  };
+
+  /* ══════════════════════════════════════════
+     TABS
+  ══════════════════════════════════════════ */
+  function switchTab(tabKey) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      const active = btn.dataset.tab === tabKey;
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-selected', active);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.classList.toggle('active', panel.id === `panel-${tabKey}`);
+    });
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  /* ══════════════════════════════════════════
+     INIT
+  ══════════════════════════════════════════ */
+  await loadRole();
+  await loadQuests();
+
+</script>
+</body>
+</html>

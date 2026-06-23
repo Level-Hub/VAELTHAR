@@ -8,41 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/design-tokens.css" />
   <style>
-    :root {
-      --void:         #0a0a0f;
-      --surf1:        #111118;
-      --surf2:        #18181f;
-      --surf3:        #22222c;
-      --border:       #2e2e3a;
-      --border-warm:  #3a3020;
-      --border-glow:  #4a3f2a;
-      --gold-dim:     #7a5c1e;
-      --gold:         #c9882a;
-      --gold-bright:  #f0b849;
-      --gold-glow:    rgba(201,136,42,.14);
-      --silver-dim:   #3a3a4a;
-      --silver:       #8a8aaa;
-      --silver-bright:#c2c2d8;
-      --red:          #c0392b;
-      --red-bright:   #e74c3c;
-      --green:        #1e7a4a;
-      --green-bright: #27ae60;
-      --blue-bright:  #2980b9;
-      --txt:          #e8e4d8;
-      --txt-sec:      #9a9098;
-      --txt-muted:    #5a5468;
-      --font-display: 'Cinzel', Georgia, serif;
-      --font-data:    'Rajdhani', monospace;
-      --font-body:    'Inter', system-ui, sans-serif;
-      --ease-out:     cubic-bezier(.16,1,.3,1);
-      --dur-fast:     120ms;
-      --dur-base:     240ms;
-      --glow-gold:    0 0 24px rgba(201,136,42,.5), 0 0 64px rgba(201,136,42,.16);
-      --glow-gold-sm: 0 0 10px rgba(201,136,42,.5);
-      --shadow-lg:    0 8px 32px rgba(0,0,0,.7);
-      --shadow-xl:    0 24px 64px rgba(0,0,0,.75);
-    }
 
     *, *::before, *::after {
       box-sizing: border-box; margin: 0; padding: 0;
@@ -269,7 +236,7 @@
       .hero-right { padding: 3rem 1.5rem 4rem; }
     }
 
-    .role-card-wrap { width: 100%; max-width: 340px; }
+    .role-card-wrap { width: 100%; max-width: 340px; min-width: 0; }
 
     .role-card-label {
       font-size: .6rem; font-weight: 600; letter-spacing: .22em;
@@ -301,7 +268,7 @@
       border: 1px solid;
       transition: background .4s, border-color .4s, color .4s;
     }
-    .role-card-meta { flex: 1; min-width: 0; }
+    .role-card-meta { flex: 1; min-width: 0; overflow: hidden; }
     .role-card-class {
       font-size: .58rem; font-weight: 600; letter-spacing: .18em;
       text-transform: uppercase; color: var(--txt-muted);
@@ -309,9 +276,11 @@
     }
     .role-card-name {
       font-family: var(--font-display);
-      font-size: 1.45rem; font-weight: 700; letter-spacing: .06em;
+      font-size: clamp(.95rem, 3.5vw, 1.45rem); font-weight: 700; letter-spacing: .06em;
       text-transform: uppercase; color: var(--txt); line-height: 1.1;
       transition: color .3s;
+      word-break: break-word;
+      overflow-wrap: break-word;
     }
     .role-card-focus {
       font-size: .78rem; color: var(--txt-sec); margin-top: .35rem;
@@ -508,8 +477,13 @@
       background: var(--surf2); border: 1px solid var(--border);
       border-radius: 12px; padding: 1.25rem 1.1rem;
       transition: border-color .3s var(--ease-out), background .3s;
+      height: 210px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
     }
-    .day-event:hover .day-card { border-color: var(--gold-dim); background: var(--surf3); }
+    .day-card-exp { margin-top: auto; padding-top: .75rem; }
+    .day-event:hover .day-card { border-color: var(--border); background: var(--surf2); }
+    .day-event.active .day-card { border-color: var(--border); background: var(--surf2); }
 
     .day-period {
       font-size: .58rem; font-weight: 600; letter-spacing: .18em;
@@ -1179,9 +1153,14 @@
 
   <script type="module">
     import { icon } from '/icons.js';
+    import { supabase } from '/api.js';
+    import { requireGuest } from '/auth.js';
 
-    /* ─── ROLES DATA ─── */
-    const ROLES = [
+    /* ─── AUTH GUARD — ถ้า login แล้ว redirect ไป dashboard ─── */
+    await requireGuest();
+
+    /* ─── ROLES DATA — loaded from DB, fallback to static ─── */
+    const ROLES_FALLBACK = [
       { key:'scholar',    name:'Scholar',    focus:'อ่าน · เรียน · สรุป',          rc:'#7b68ee', quests:4, expBonus:0 },
       { key:'warlord',    name:'Warlord',    focus:'ออกกำลังกาย · ฝึกร่างกาย',    rc:'#e74c3c', quests:5, expBonus:0 },
       { key:'warden',     name:'Warden',     focus:'รักษ์โลก · ความยั่งยืน',      rc:'#27ae60', quests:3, expBonus:0 },
@@ -1198,6 +1177,7 @@
       { key:'herald',     name:'Herald',     focus:'วิ่ง · GPS Tracking',          rc:'#00bcd4', quests:5, expBonus:0 },
       { key:'paladin',    name:'Paladin',    focus:'บริการสังคม · ชุมชน',         rc:'#c9882a', quests:4, expBonus:0 },
     ];
+    let ROLES = [...ROLES_FALLBACK]; // ใช้ fallback ก่อน จน DB โหลดเสร็จ
 
     /* ─── HERO ROLE CARD ─── */
     let curRole = 0;
@@ -1234,9 +1214,9 @@
         cardName.textContent = r.name;
         cardName.style.color = r.rc;
         cardFocus.textContent = r.focus;
-        const bonus = 25; // random mode shows +25%; choose shows 0
-        cardExpVal.textContent = '+0%';
-        cardExpBar.style.width = '30%';
+        const expPct = r.expBonus > 0 ? Math.min(r.expBonus, 100) : 0;
+        cardExpVal.textContent = r.expBonus > 0 ? `+${r.expBonus}%` : '+0%';
+        cardExpBar.style.width = (expPct || 30) + '%';
         cardExpBar.style.background = r.rc;
         const qpct = Math.round((r.quests / 5) * 100);
         cardQuestBar.style.width = qpct + '%';
@@ -1250,7 +1230,41 @@
       }, 160);
     }
 
+    async function loadRolesFromDB() {
+      try {
+        const { data, error } = await supabase
+          .from('roles')
+          .select('key, name, focus, color, daily_quests, exp_bonus')
+          .order('name');
+        if (error || !data?.length) throw error ?? new Error('no roles');
+        ROLES = data.map(r => ({
+          key:      r.key,
+          name:     r.name,
+          focus:    r.focus,
+          rc:       r.color,
+          quests:   r.daily_quests ?? 3,
+          expBonus: r.exp_bonus    ?? 0,
+        }));
+        // rebuild dots
+        const dotsEl2 = document.getElementById('roleDots');
+        dotsEl2.innerHTML = '';
+        ROLES.forEach((_, i) => {
+          const d = document.createElement('div');
+          d.className = 'role-dot' + (i===0 ? ' active' : '');
+          dotsEl2.appendChild(d);
+        });
+        curRole = 0;
+        showRole(0);
+        renderRoles(false);
+      } catch(e) {
+        console.error('loadRolesFromDB:', e);
+        // fallback ยังแสดงผลอยู่จาก showRole(0) ด้านล่าง
+      }
+    }
+
     showRole(0);
+    renderRoles(false);
+    loadRolesFromDB(); // โหลด DB ทีหลัง — อัปเดต UI เมื่อพร้อม
 
     function next() { curRole = (curRole + 1) % ROLES.length; showRole(curRole, 1); }
     function prev() { curRole = (curRole - 1 + ROLES.length) % ROLES.length; showRole(curRole, -1); }
@@ -1265,13 +1279,12 @@
     function renderRoles(bonus) {
       grid.innerHTML = ROLES.map(r => `
         <div class="role-tile${bonus?' show-bonus':''}" style="--rc:${r.rc}">
-          <div class="role-bonus">+25% EXP</div>
+          <div class="role-bonus">+${r.expBonus > 0 ? r.expBonus : 25}% EXP</div>
           <div class="role-tile-icon">${icon(r.key,18)}</div>
           <div class="role-tile-name">${r.name}</div>
           <div class="role-tile-focus">${r.focus}</div>
         </div>`).join('');
     }
-    renderRoles(false);
     document.querySelectorAll('.rtoggle').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.rtoggle').forEach(b => b.classList.remove('active'));
@@ -1294,25 +1307,57 @@
       };
       requestAnimationFrame(go);
     }
-    const mo = new IntersectionObserver(en => {
-      if(en[0].isIntersecting){
-        counter(document.getElementById('c-players'),3841);
-        counter(document.getElementById('c-quests'),12056);
-        counter(document.getElementById('c-guilds'),247);
-        mo.disconnect();
+
+    async function loadHeroMetrics() {
+      try {
+        const [{ count: players }, { count: quests }, { count: guilds }] = await Promise.all([
+          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('user_quests').select('*', { count: 'exact', head: true }).eq('status', 'approved'),
+          supabase.from('guilds').select('*', { count: 'exact', head: true }),
+        ]);
+        counter(document.getElementById('c-players'), players ?? 0);
+        counter(document.getElementById('c-quests'),  quests  ?? 0);
+        counter(document.getElementById('c-guilds'),  guilds  ?? 0);
+      } catch(e) {
+        console.error('loadHeroMetrics:', e);
       }
+    }
+
+    const mo = new IntersectionObserver(en => {
+      if(en[0].isIntersecting){ loadHeroMetrics(); mo.disconnect(); }
     },{threshold:.5});
     mo.observe(document.querySelector('.hero-metrics'));
 
     /* ─── COUNTDOWN ─── */
-    const end = new Date(); end.setDate(end.getDate()+82); end.setHours(0,0,0,0);
+    let countdownEnd = null;
+
     function tick(){
-      const diff=end-Date.now(), pad=n=>String(Math.max(0,n)).padStart(2,'0');
-      document.getElementById('cd-d').textContent=pad(Math.floor(diff/86400000));
-      document.getElementById('cd-h').textContent=pad(Math.floor(diff%86400000/3600000));
-      document.getElementById('cd-m').textContent=pad(Math.floor(diff%3600000/60000));
+      if (!countdownEnd) return;
+      const diff = countdownEnd - Date.now();
+      const pad = n => String(Math.max(0, n)).padStart(2, '0');
+      document.getElementById('cd-d').textContent = pad(Math.floor(diff / 86400000));
+      document.getElementById('cd-h').textContent = pad(Math.floor(diff % 86400000 / 3600000));
+      document.getElementById('cd-m').textContent = pad(Math.floor(diff % 3600000 / 60000));
     }
-    tick(); setInterval(tick,30000);
+
+    async function loadSeasonCountdown() {
+      try {
+        const { data, error } = await supabase
+          .from('seasons')
+          .select('ends_at')
+          .eq('is_active', true)
+          .single();
+        if (error || !data) throw error ?? new Error('no active season');
+        countdownEnd = new Date(data.ends_at).getTime();
+      } catch(e) {
+        console.error('loadSeasonCountdown:', e);
+        // fallback: ไม่แสดงตัวเลข แต่ไม่ crash
+      }
+      tick();
+    }
+
+    loadSeasonCountdown();
+    setInterval(tick, 30000);
 
     /* ─── DAY TIMELINE drag scroll ─── */
     const track = document.getElementById('dayTrack');
@@ -1327,6 +1372,52 @@
       en.forEach(e => { if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);} });
     },{threshold:.08,rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.r').forEach(el => ro.observe(el));
+  </script>
+
+  <!-- ── DEBUG BUTTON ── -->
+  <button id="dbgBtn" onclick="document.getElementById('dbgPanel').style.display=document.getElementById('dbgPanel').style.display==='none'?'block':'none'" style="
+    position:fixed;bottom:16px;right:16px;z-index:9999;
+    background:#1a1a24;border:1px solid #4a3f2a;color:#c9882a;
+    font-size:11px;font-family:monospace;letter-spacing:.05em;
+    padding:6px 10px;border-radius:6px;cursor:pointer;opacity:.85;
+  ">DBG</button>
+
+  <div id="dbgPanel" style="display:none;position:fixed;bottom:52px;right:16px;z-index:9999;
+    background:#0d0d14;border:1px solid #2e2e3a;border-radius:10px;
+    padding:12px;width:320px;max-height:60vh;overflow-y:auto;
+    font-family:monospace;font-size:11px;color:#e8e4d8;line-height:1.6;">
+    <div style="color:#f0b849;font-weight:bold;margin-bottom:8px;">VAELTHAR DEBUG</div>
+    <div id="dbgLog">กำลังตรวจสอบ...</div>
+  </div>
+
+  <script>
+    (function() {
+      const log = document.getElementById('dbgLog');
+      const lines = [];
+
+      function add(msg, color) {
+        lines.push('<div style="color:' + (color||'#e8e4d8') + '">' + msg + '</div>');
+        if (log) log.innerHTML = lines.join('');
+      }
+
+      // 1. Check icons.js
+      fetch('/icons.js')
+        .then(r => add('icons.js → ' + r.status + ' ' + (r.ok ? '✓' : '✗'), r.ok ? '#27ae60' : '#e74c3c'))
+        .catch(e => add('icons.js → FAIL: ' + e.message, '#e74c3c'));
+
+      // 2. Check key elements exist
+      const ids = ['roleCard','cardIcon','cardName','cardFocus','rolesGrid','roleDots','roleNext','rolePrev','nav','dayTrack'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        add('el #' + id + ' → ' + (el ? '✓' : 'NOT FOUND'), el ? '#27ae60' : '#e74c3c');
+      });
+
+      // 3. Catch JS errors
+      window.addEventListener('error', e => add('JS ERROR: ' + e.message + ' (line ' + e.lineno + ')', '#e74c3c'));
+      window.addEventListener('unhandledrejection', e => add('PROMISE ERR: ' + (e.reason?.message || e.reason), '#e74c3c'));
+
+      add('--- ตรวจสอบเสร็จ ---', '#5a5468');
+    })();
   </script>
 </body>
 </html>

@@ -7,49 +7,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/design-tokens.css" />
   <style>
     /* ── TOKENS ─────────────────────────────────────────────── */
-    :root {
-      --void:        #0a0a0f;
-      --surf1:       #111118;
-      --surf2:       #18181f;
-      --surf3:       #22222c;
-      --border:      #2e2e3a;
-      --border-glow: #4a3f2a;
-
-      --gold-dim:    #7a5c1e;
-      --gold:        #c9882a;
-      --gold-bright: #f0b849;
-      --gold-glow:   rgba(201,136,42,.16);
-
-      --red:         #c0392b;
-      --red-bright:  #e74c3c;
-      --green:       #1e7a4a;
-      --green-bright:#27ae60;
-      --blue-bright: #2980b9;
-
-      --txt:         #e8e4d8;
-      --txt-sec:     #9a9098;
-      --txt-muted:   #5a5468;
-      --txt-gold:    #f0b849;
-
-      --font-display:'Cinzel',Georgia,serif;
-      --font-data:   'Rajdhani','Courier New',monospace;
-      --font-body:   'Inter',system-ui,sans-serif;
-
-      --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 18px; --r-pill: 999px;
-
-      --ease-out:    cubic-bezier(.16,1,.3,1);
-      --dur-fast:    120ms;
-      --dur-base:    240ms;
-
-      --glow-gold:   0 0 16px rgba(201,136,42,.5), 0 0 48px rgba(201,136,42,.15);
-      --glow-gold-sm:0 0 8px rgba(201,136,42,.45);
-      --glow-green:  0 0 8px rgba(39,174,96,.5);
-
-      --sidebar-w: 240px;
-      --sidebar-collapsed: 64px;
-    }
 
     /* ── RESET ── */
     *,*::before,*::after {
@@ -782,12 +742,12 @@
   <script type="module">
     import { icon } from '/icons.js';
     import { initSidebar } from '/sidebar.js';
-    import { currentState } from '/auth.js';
-    import { requireAuth } from '/auth.js';
+    import { currentState, requireAuth } from '/auth.js';
     import { supabase } from '/api.js';
 
     /* ─── GUARD ─── */
-    requireAuth();
+    const _authState = await requireAuth();
+    if (!_authState) throw new Error('not authenticated');
 
     /* ─── INIT SIDEBAR ─── */
     document.addEventListener('DOMContentLoaded', () => initSidebar());
@@ -824,8 +784,16 @@
 
     /* ─── RENDER ─── */
     async function render() {
-      const { user, profile } = currentState();
+      const { user, profile: cachedProfile } = currentState();
       const isOwn = true; // simplified; compare URL param vs user.id in full build
+
+      // Fetch fresh profile from DB (currentState() may be stale or missing fields)
+      const { data: profileRow } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      const profile = profileRow || cachedProfile || {};
 
       /* ── Avatar ── */
       const avatarEl = document.getElementById('avatarEl');
@@ -896,12 +864,39 @@
       document.getElementById('expNumbers').innerHTML = `<strong>${exp.toLocaleString()}</strong> / ${expMax.toLocaleString()} EXP`;
       setTimeout(() => { document.getElementById('expFill').style.width = pct + '%'; }, 120);
 
-      /* ── Stats Row ── */
+      /* ── Stats Row — query from real tables ── */
+      const today = new Date().toISOString().split('T')[0];
+
+      const [
+        { count: totalQuestsCount },
+        { data: habitLogRows },
+        { count: checkinCount },
+      ] = await Promise.all([
+        supabase.from('user_quests').select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('status', 'approved'),
+        supabase.from('habit_logs').select('logged_date')
+          .eq('user_id', user.id).order('logged_date', { ascending: false }).limit(60),
+        supabase.from('checkins').select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+      ]);
+
+      // Calculate current habit streak
+      let habitStreak = 0;
+      if (habitLogRows?.length) {
+        const dates = [...new Set(habitLogRows.map(r => r.logged_date))];
+        const check = new Date(); check.setHours(0,0,0,0);
+        for (let i = 0; i < 60; i++) {
+          const d = new Date(check); d.setDate(d.getDate() - i);
+          if (dates.includes(d.toISOString().split('T')[0])) habitStreak++;
+          else if (i > 0) break;
+        }
+      }
+
       const stats = [
-        { iconKey:'quest',      val: profile?.total_quests   || 0,  lbl:'Quests' },
-        { iconKey:'habit',      val: profile?.habit_streak   || 0,  lbl:'Streak' },
-        { iconKey:'pin',        val: profile?.checkin_count  || 0,  lbl:'Check-ins' },
-        { iconKey:'trophy',     val: profile?.season_rank    || '—', lbl:'Rank' },
+        { iconKey:'quest',  val: totalQuestsCount ?? 0,  lbl:'Quests' },
+        { iconKey:'habit',  val: habitStreak,              lbl:'Streak' },
+        { iconKey:'pin',    val: checkinCount ?? 0,        lbl:'Check-ins' },
+        { iconKey:'trophy', val: profile?.season_rank || '—', lbl:'Rank' },
       ];
       document.getElementById('statsRow').innerHTML = stats.map(s => `
         <div class="stat-item">
@@ -964,38 +959,49 @@
         `;
       }).join('');
 
-      /* ── Quest History (mock/placeholder — replace with Supabase query) ── */
-      const MOCK_QUESTS = [
-        { name:'อ่านหนังสือ 30 นาที',       role:'scholar',    exp:80,  date:'วันนี้' },
-        { name:'ออกกำลังกาย 20 นาที',        role:'warlord',    exp:100, date:'เมื่อวาน' },
-        { name:'ทำอาหารเย็นเอง',             role:'culinart',   exp:90,  date:'3 วันก่อน' },
-        { name:'ถ่ายภาพและบันทึกเรื่องราว',  role:'chronicler', exp:70,  date:'5 วันก่อน' },
-      ];
-      document.getElementById('questHistory').innerHTML = MOCK_QUESTS.map(q => `
-        <div class="quest-entry">
-          <div class="quest-icon">${icon(q.role, 16)}</div>
-          <div class="quest-body">
-            <div class="quest-name">${q.name}</div>
-            <div class="quest-meta">
-              <span class="quest-exp">+${q.exp} EXP</span>
-              <span class="quest-role-tag">${q.role}</span>
-              <span class="quest-date">${q.date}</span>
-            </div>
-          </div>
-          <div>${icon('check', 14)}</div>
-        </div>
-      `).join('');
+      /* ── Quest History — from DB ── */
+      const { data: questHistory } = await supabase
+        .from('user_quests')
+        .select('completed_at, quests(title, exp_reward, type)')
+        .eq('user_id', user.id)
+        .eq('status', 'approved')
+        .order('completed_at', { ascending: false })
+        .limit(10);
 
-      /* ── Stats list ── */
+      const questHistoryEl = document.getElementById('questHistory');
+      if (!questHistory?.length) {
+        questHistoryEl.innerHTML = `<p style="color:var(--txt-muted);font-size:.8125rem;text-align:center;padding:1rem 0;">ยังไม่มีประวัติ Quest</p>`;
+      } else {
+        questHistoryEl.innerHTML = questHistory.map(uq => {
+          const q = uq.quests;
+          const dateStr = uq.completed_at
+            ? new Date(uq.completed_at).toLocaleDateString('th-TH', { day:'numeric', month:'short' })
+            : '';
+          return `
+            <div class="quest-entry">
+              <div class="quest-icon">${icon(q?.type || 'scroll', 16)}</div>
+              <div class="quest-body">
+                <div class="quest-name">${q?.title || '—'}</div>
+                <div class="quest-meta">
+                  <span class="quest-exp">+${q?.exp_reward || 0} EXP</span>
+                  <span class="quest-role-tag">${q?.type || ''}</span>
+                  <span class="quest-date">${dateStr}</span>
+                </div>
+              </div>
+              <div>${icon('check', 14)}</div>
+            </div>`;
+        }).join('');
+      }
+
+      /* ── Stats list — use values already queried above ── */
       const STATS = [
-        { iconKey:'exp',        label:'Total EXP',       val: (profile?.total_exp || exp).toLocaleString(),       gold:true },
-        { iconKey:'level',      label:'Level',           val: lvl },
-        { iconKey:'flame',      label:'Best Habit Streak', val: (profile?.best_streak || 0) + ' วัน' },
-        { iconKey:'quest',      label:'Quests Completed', val: (profile?.total_quests || 0).toLocaleString() },
-        { iconKey:'trophy',     label:'Seasonal Rank',   val: profile?.season_rank || '—',                        gold:!!profile?.season_rank },
-        { iconKey:'season',     label:'Season',          val: 'Ember of the Ashlands' },
-        { iconKey:'pin',        label:'Check-ins',       val: profile?.checkin_count || 0 },
-        { iconKey:'user',       label:'Member Since',    val: joinedDate(user?.created_at) },
+        { iconKey:'exp',    label:'Total EXP',          val: exp.toLocaleString(),             gold:true },
+        { iconKey:'level',  label:'Level',               val: lvl },
+        { iconKey:'flame',  label:'Habit Streak',        val: habitStreak + ' วัน' },
+        { iconKey:'quest',  label:'Quests Completed',    val: (totalQuestsCount ?? 0).toLocaleString() },
+        { iconKey:'trophy', label:'Seasonal Rank',       val: profile?.season_rank || '—',     gold:!!profile?.season_rank },
+        { iconKey:'pin',    label:'Check-ins',           val: (checkinCount ?? 0) },
+        { iconKey:'user',   label:'Member Since',        val: joinedDate(user?.created_at) },
       ];
       document.getElementById('statList').innerHTML = STATS.map(s => `
         <div class="stat-row">
@@ -1049,21 +1055,38 @@
         `;
       }
 
-      /* ── Mood Chart (7 days mock) ── */
-      const MOCK_MOOD = [3, 4, 2, 5, 4, 3, 4]; // 1–5
-      const moodChart = document.getElementById('moodChart');
-      moodChart.innerHTML = MOCK_MOOD.map((m, i) => `
-        <div class="mood-bar" style="
-          height:${(m / 5) * 100}%;
-          background:${MOOD_COLORS[m - 1]};
-          opacity:.8;
-        " title="${MOOD_LABELS_TH[i]}: ${m}/5"></div>
-      `).join('');
-
+      /* ── Mood Chart — from mood_logs (last 7 days) ── */
+      const moodChart  = document.getElementById('moodChart');
       const moodLabels = document.getElementById('moodLabels');
-      moodLabels.innerHTML = MOOD_LABELS_TH.slice(-7).map(d =>
-        `<span class="mood-label">${d.slice(0,2)}</span>`
-      ).join('');
+
+      // Build last-7-days date array
+      const last7 = Array.from({ length: 7 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - (6 - i)); d.setHours(0,0,0,0);
+        return d.toISOString().split('T')[0];
+      });
+
+      const { data: moodRows } = await supabase
+        .from('mood_logs')
+        .select('logged_date, mood')
+        .eq('user_id', user.id)
+        .gte('logged_date', last7[0])
+        .order('logged_date', { ascending: true });
+
+      const moodByDate = {};
+      (moodRows || []).forEach(r => { moodByDate[r.logged_date] = r.mood; });
+
+      moodChart.innerHTML = last7.map((date, i) => {
+        const m = moodByDate[date] ?? null;
+        const dayLabel = MOOD_LABELS_TH[i] || date.slice(-2);
+        return m !== null
+          ? `<div class="mood-bar" style="height:${(m/5)*100}%;background:${MOOD_COLORS[m-1]};opacity:.8;" title="${dayLabel}: ${m}/5"></div>`
+          : `<div class="mood-bar" style="height:10%;background:var(--surf3);opacity:.4;" title="${dayLabel}: ไม่มีข้อมูล"></div>`;
+      }).join('');
+
+      moodLabels.innerHTML = last7.map((date, i) => {
+        const label = MOOD_LABELS_TH[i] || '';
+        return `<span class="mood-label">${label.slice(0,2)}</span>`;
+      }).join('');
     }
 
     render();

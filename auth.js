@@ -201,31 +201,22 @@ export async function requireAdmin() {
  * @returns {{ user, profile }}
  */
 export async function register(email, password, displayName, username) {
-  /* 1. Create auth user */
-  const user = await apiSignUp(email, password);
+  /* 1. Create auth user
+     DB trigger handle_new_user() fires automatically and creates the profiles row.
+     display_name + username are passed via raw_user_meta_data so the trigger picks them up. */
+  const user = await apiSignUp(email, password, {
+    data: {
+      display_name: displayName.trim(),
+      username:     username ? username.toLowerCase().trim() : null,
+    },
+  });
   _user = user;
 
-  /* 2. Seed profiles row */
-  const profilePayload = {
-    id:                  user.id,
-    display_name:        displayName.trim(),
-    username:            username ? username.toLowerCase().trim() : null,
-    email:               email.toLowerCase().trim(),
-    onboarding_complete: false,
-    is_admin:            false,
-    is_verified_seller:  false,
-    online:              true,
-    exp:                 0,
-    level:               1,
-    gold:                0,
-    crystal:             0,
-    created_at:          new Date().toISOString(),
-  };
+  /* 2. Wait briefly for trigger to fire, then fetch the created profile */
+  await new Promise(r => setTimeout(r, 800));
+  _profile = await fetchProfile(user.id);
 
-  const [profile] = await insert(TABLES.PROFILES, profilePayload);
-  _profile = profile;
-
-  /* 3. Update module session */
+  /* 3. Update session */
   _session = await getSession();
   _ready   = true;
 
