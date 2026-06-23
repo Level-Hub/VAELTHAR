@@ -93,8 +93,9 @@
     /* ── MAIN CONTENT ── */
     .ob-body {
       display:flex; align-items:center; justify-content:center;
-      padding:3rem 1.5rem;
+      padding:2rem 1rem;
       position:relative; overflow:hidden;
+      width:100%;
     }
 
     /* Ambient glow bg */
@@ -303,10 +304,11 @@
     /* Custom habit add */
     .habit-add-row {
       display:flex; gap:.6rem; align-items:center;
-      width:100%; min-width:0;
+      width:100%; min-width:0; overflow:hidden;
     }
+    .habit-add-btn { flex-shrink:0; padding:.6rem .9rem; white-space:nowrap; }
     .habit-input {
-      flex:1; height:42px;
+      flex:1; min-width:0; height:42px;
       background:var(--surf2); border:1px solid var(--border);
       border-radius:8px; padding:0 1rem;
       font-family:var(--font-body); font-size:.86rem; color:var(--txt);
@@ -542,7 +544,7 @@
 
         <div class="habit-add-row">
           <input type="text" class="habit-input" id="customHabit" placeholder="เพิ่ม Habit ของตัวเอง..." maxlength="60" />
-          <button class="btn btn-ghost" id="addHabitBtn" aria-label="เพิ่ม Habit">
+          <button class="btn btn-ghost habit-add-btn" id="addHabitBtn" aria-label="เพิ่ม Habit">
             <span id="ic-plus-btn"></span>
             <span class="btn-label">เพิ่ม</span>
           </button>
