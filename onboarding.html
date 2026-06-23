@@ -269,19 +269,22 @@
       display:flex; align-items:center; justify-content:center; color:var(--gold);
     }
 
-    .habit-seeds {
+    .habit-seeds { width:100%;
       display:grid; grid-template-columns:1fr;
       gap:.6rem; margin-bottom:1.5rem;
     }
 
     .hs-item {
-      display:flex; align-items:center; gap:.75rem;
+      display:grid;
+      grid-template-columns:20px 1fr auto;
+      align-items:center; gap:.75rem;
       padding:.8rem 1rem;
       background:var(--surf1); border:1.5px solid var(--border);
       border-radius:9px; cursor:pointer;
       transition:border-color var(--dur-base),background var(--dur-base),
                  transform var(--dur-fast);
       user-select:none;
+      width:100%; box-sizing:border-box;
     }
     .hs-item:hover  { border-color:var(--border-glow); background:var(--surf2); }
     .hs-item.on     { border-color:var(--gold); background:rgba(201,136,42,.07); }
@@ -295,10 +298,10 @@
       transition:border-color var(--dur-fast),background var(--dur-fast),color var(--dur-fast);
     }
     .hs-item.on .hs-box { border-color:var(--gold); background:var(--gold); color:#07070b; }
-    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .hs-exp {
       font-family:var(--font-data); font-size:.72rem; font-weight:700;
-      color:var(--gold-bright); white-space:nowrap; flex-shrink:0;
+      color:var(--gold-bright); white-space:nowrap; flex-shrink:0; justify-self:end;
     }
 
     /* Custom habit add */
