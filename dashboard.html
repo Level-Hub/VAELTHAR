@@ -32,12 +32,16 @@
     button { font-family:var(--font-body); cursor:pointer; border:none; background:none; }
     :focus-visible { outline:2px solid var(--gold); outline-offset:3px; border-radius:var(--r-sm); }
 
-    /* ── LAYOUT ─────────────────────────────────────────────── */
-    #sidebar-root { flex-shrink:0; }
+    /* ── SIDEBAR TOKEN BRIDGE ────────────────────────────────── */
+    :root {
+      --sidebar-width:     240px;
+      --sidebar-collapsed: 60px;
+    }
 
+    /* ── LAYOUT ─────────────────────────────────────────────── */
     .main-content {
       flex:1;
-      margin-left:var(--sidebar-w);
+      margin-left:var(--sidebar-width);
       padding:2rem 2rem 4rem;
       max-width:1200px;
       transition:margin-left var(--dur-base) var(--ease-out);
@@ -1088,8 +1092,9 @@
     import { supabase }                        from '/api.js';
 
     /* ── AUTH GUARD ─────────────────────────────────────────── */
-    const { user } = await requireAuth();  // redirects to login.html if not signed in
-    if (!user) throw new Error('no user');
+    const authState = await requireAuth();  // redirects to login.html if not signed in
+    if (!authState?.user) throw new Error('no user');
+    const { user, profile } = authState;
 
     /* ── ROLE GUARD — ถ้ายังไม่มี role ให้กลับ onboarding ── */
     {
@@ -1107,6 +1112,7 @@
     }
 
     /* ── SIDEBAR ────────────────────────────────────────────── */
+    /* เรียกหลัง requireAuth เพื่อให้ profile พร้อมใน currentState() */
     initSidebar();
 
     /* ── INJECT STATIC ICONS ────────────────────────────────── */
@@ -1613,8 +1619,8 @@
 
     /* ── SIDEBAR COLLAPSED STATE ────────────────────────────── */
     const mainEl = document.getElementById('main-content');
-    store.subscribe(STATE.SIDEBAR_COLLAPSED, (val) => {
-      mainEl.classList.toggle('sidebar-collapsed', val);
+    store.watch(STATE.SIDEBAR_OPEN, (open) => {
+      mainEl.classList.toggle('sidebar-collapsed', open === false);
     });
 
     /* ── INIT ALL ───────────────────────────────────────────── */

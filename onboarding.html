@@ -830,7 +830,7 @@
         // แสดง error ให้ user เห็น ไม่ redirect เงียบๆ
         const errEl = document.createElement('p');
         errEl.style.cssText = 'color:#e74c3c;font-size:.8125rem;text-align:center;margin-top:.75rem;';
-        errEl.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+        errEl.textContent = 'Error: ' + (err?.message || err?.toString() || 'unknown');
         btn.parentElement.appendChild(errEl);
         setTimeout(() => errEl.remove(), 4000);
       }
