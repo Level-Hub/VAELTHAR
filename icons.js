@@ -3,7 +3,7 @@
    icons.js | v1.2 — added vaelthar_mark + vaelthar_logo (Runic Sigil)
    
    Usage:
-     import { icon } from '/js/ui/icons.js';
+     import { icon } from '/icons.js';
      element.innerHTML = icon('sword');
      element.innerHTML = icon('shield', 20, 'icon--gold');
    ============================================================ */

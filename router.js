@@ -321,7 +321,7 @@ export function replace(path) {
    sidebar links, and wires up all [data-link] anchors.
 
    @example
-   import { initRouter } from '/js/core/router.js';
+   import { initRouter } from '/router.js';
    document.addEventListener('DOMContentLoaded', () => initRouter());
 ---------------------------------------------------------- */
 

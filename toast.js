@@ -3,7 +3,7 @@
    /js/ui/toast.js | v1.0
 
    Usage:
-     import { toast } from '/js/ui/toast.js';
+     import { toast } from '/toast.js';
 
      toast.success('Quest complete!', 'You earned 120 EXP');
      toast.error('Failed to save');

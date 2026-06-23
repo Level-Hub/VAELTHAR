@@ -564,7 +564,7 @@
       btn.disabled = true;
 
       try {
-        const { loginWithIdentifier } = await import('/js/core/auth.js');
+        const { loginWithIdentifier } = await import('/auth.js');
         await loginWithIdentifier(identifier, pw);
         /* auth.js will redirect to dashboard */
       } catch (err) {
@@ -586,7 +586,7 @@
 
     /* Redirect logged-in users away */
     try {
-      const { requireGuest } = await import('/js/core/auth.js');
+      const { requireGuest } = await import('/auth.js');
       await requireGuest();
     } catch {}
   </script>

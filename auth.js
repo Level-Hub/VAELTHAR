@@ -118,7 +118,7 @@ export async function initAuth() {
  *
  * @example
  * // dashboard.html
- * import { requireAuth } from '/js/core/auth.js';
+ * import { requireAuth } from '/auth.js';
  * const { user, profile } = await requireAuth();
  */
 export async function requireAuth() {
@@ -147,7 +147,7 @@ export async function requireAuth() {
  *
  * @example
  * // login.html
- * import { requireGuest } from '/js/core/auth.js';
+ * import { requireGuest } from '/auth.js';
  * await requireGuest();
  */
 export async function requireGuest() {
@@ -167,7 +167,7 @@ export async function requireGuest() {
  *
  * @example
  * // admin/index.html
- * import { requireAdmin } from '/js/core/auth.js';
+ * import { requireAdmin } from '/auth.js';
  * await requireAdmin();
  */
 export async function requireAdmin() {

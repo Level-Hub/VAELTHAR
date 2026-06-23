@@ -3,7 +3,7 @@
    /js/ui/modal.js | v1.0
 
    Usage:
-     import { modal } from '/js/ui/modal.js';
+     import { modal } from '/modal.js';
 
      // Simple confirm
      const confirmed = await modal.confirm('Delete item?', 'This cannot be undone.');

@@ -671,7 +671,7 @@
       if (!ok) return;
       sub.classList.add('loading');
       try {
-        const { register } = await import('/js/core/auth.js');
+        const { register } = await import('/auth.js');
         await register(email, pw, name, uname);
         window.location.href = 'onboarding.html';
       } catch(err) {
@@ -685,7 +685,7 @@
       }
     });
 
-    try{const{requireGuest}=await import('/js/core/auth.js');await requireGuest();}catch{}
+    try{const{requireGuest}=await import('/auth.js');await requireGuest();}catch{}
   </script>
 </body>
 </html>

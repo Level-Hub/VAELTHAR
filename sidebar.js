@@ -7,7 +7,7 @@
    Accent colour comes from each page's CSS --accent variable.
 
    Usage (every in-app page):
-     import { initSidebar } from '/js/ui/sidebar.js';
+     import { initSidebar } from '/sidebar.js';
      document.addEventListener('DOMContentLoaded', () => initSidebar());
    ============================================================ */
 
