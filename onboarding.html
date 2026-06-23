@@ -603,7 +603,13 @@
 </div><!-- /page -->
 
 <script type="module">
-  import { icon } from '/icons.js';
+  import { icon }                          from '/icons.js';
+  import { requireAuth, completeOnboarding } from '/auth.js';
+  import { supabase }                      from '/api.js';
+
+  /* ── AUTH GUARD ── */
+  const { user } = await requireAuth();
+  if (!user) throw new Error('not authenticated');
 
   /* ── ROLES DATA ── */
   const ROLES = [
@@ -769,46 +775,64 @@
       btn.classList.add('loading');
       btn.disabled = true;
       try {
-        const { completeOnboarding, currentState } = await import('/auth.js');
-        const { supabase } = await import('/api.js');
-        const { user } = currentState();
+        // 1. ดึง active season
+        const { data: activeSeason } = await supabase
+          .from('seasons')
+          .select('id')
+          .eq('is_active', true)
+          .maybeSingle();
 
-        // 1. Save role selection to user_roles
-        if (selectedRole || selectedMode === 'random') {
-          // ดึง season ที่ active อยู่ก่อน เพื่อใส่ season_id ให้ครบ
-          // (constraint จริงคือ UNIQUE (user_id, season_id))
-          const { data: activeSeason } = await supabase
-            .from('seasons')
+        // 2. ถ้าเลือก role — หา UUID จาก roles table ก่อน
+        let roleUUID = null;
+        if (selectedMode === 'choose' && selectedRole) {
+          const { data: roleRow } = await supabase
+            .from('roles')
             .select('id')
-            .eq('is_active', true)
+            .eq('key', selectedRole)
             .maybeSingle();
-
-          await supabase.from('user_roles').upsert({
-            user_id:   user.id,
-            season_id: activeSeason?.id ?? null,
-            mode:      selectedMode,
-            role_id:   selectedRole || null,
-          }, { onConflict: 'user_id,season_id' });
+          roleUUID = roleRow?.id ?? null;
         }
 
-        // 2. Save selected habits to habits table
-        const allHabits = [...selectedHabits].filter(Boolean);
+        // 3. Save role selection to user_roles (role_id เป็น UUID จริง)
+        const { error: roleError } = await supabase.from('user_roles').upsert({
+          user_id:     user.id,
+          season_id:   activeSeason?.id ?? null,
+          mode:        selectedMode,
+          role_id:     roleUUID,
+          assigned_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,season_id' });
+
+        if (roleError) throw roleError;
+
+        // 4. Save selected habits (label text จาก SEED_HABITS)
+        const allHabits = [...selectedHabits]
+          .map(hid => SEED_HABITS.find(h => h.id === hid)?.label)
+          .filter(Boolean);
+
         if (allHabits.length) {
-          await supabase.from('habits').insert(
+          const { error: habitError } = await supabase.from('habits').insert(
             allHabits.map(title => ({
               user_id:   user.id,
               title:     title,
               is_active: true,
             }))
           );
+          if (habitError) console.warn('habit insert error:', habitError);
         }
 
-        // 3. Mark onboarding complete — completeOnboarding redirects to dashboard automatically
+        // 5. Mark onboarding complete → redirect to dashboard
         await completeOnboarding({ role_mode: selectedMode });
+
       } catch (err) {
         console.error('onboarding save error:', err);
-        // fallback redirect if completeOnboarding throws before redirect
-        window.location.href = '/dashboard.html';
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        // แสดง error ให้ user เห็น ไม่ redirect เงียบๆ
+        const errEl = document.createElement('p');
+        errEl.style.cssText = 'color:#e74c3c;font-size:.8125rem;text-align:center;margin-top:.75rem;';
+        errEl.textContent = 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง';
+        btn.parentElement.appendChild(errEl);
+        setTimeout(() => errEl.remove(), 4000);
       }
     }
   });

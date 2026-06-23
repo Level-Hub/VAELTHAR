@@ -1190,7 +1190,7 @@
         .from('user_roles')
         .select('role_id, mode, roles(name, key, color)')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        .order('assigned_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
