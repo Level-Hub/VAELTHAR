@@ -15,7 +15,7 @@
    - Scroll restoration
    ============================================================ */
 
-import { initAuth, requireAuth, requireGuest, requireAdmin } from './auth.js';
+import { initAuth, requireAuth, requireGuest, requireAdmin } from '/auth.js';
 
 
 /* ----------------------------------------------------------

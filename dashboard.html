@@ -1122,12 +1122,12 @@
 
   <!-- ── SCRIPTS ──────────────────────────────────────────── -->
   <script type="module">
-    import { icon }                            from '/js/ui/icons.js';
-    import { initSidebar }                     from '/js/ui/sidebar.js';
-    import { showToast }                       from '/js/ui/toast.js';
-    import { requireAuth, currentUser }        from '/js/core/auth.js';
-    import { store, STATE }                    from '/js/core/storage.js';
-    import { supabase }                        from '/js/core/api.js';
+    import { icon }                            from '/icons.js';
+    import { initSidebar }                     from '/sidebar.js';
+    import { showToast }                       from '/toast.js';
+    import { requireAuth, currentUser }        from '/auth.js';
+    import { store, STATE }                    from '/storage.js';
+    import { supabase }                        from '/api.js';
 
     /* ── AUTH GUARD ─────────────────────────────────────────── */
     const user = await requireAuth();     // redirects to login.html if not signed in

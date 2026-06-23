@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>เริ่มต้นการผจญภัย — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void:#0a0a0f; --surf1:#111118; --surf2:#18181f; --surf3:#22222c;
+      --border:#2e2e3a; --border-warm:#3a3020; --border-glow:#4a3f2a;
+      --gold-dim:#7a5c1e; --gold:#c9882a; --gold-bright:#f0b849;
+      --gold-glow:rgba(201,136,42,.14);
+      --red:#c0392b; --red-bright:#e74c3c;
+      --green:#1e7a4a; --green-bright:#27ae60;
+      --txt:#e8e4d8; --txt-sec:#9a9098; --txt-muted:#5a5468;
+      --font-display:'Cinzel',Georgia,serif;
+      --font-data:'Rajdhani',monospace;
+      --font-body:'Inter',system-ui,sans-serif;
+      --ease-out:cubic-bezier(.16,1,.3,1);
+      --dur-fast:120ms; --dur-base:240ms; --dur-slow:400ms;
+      --glow-gold:0 0 24px rgba(201,136,42,.5),0 0 64px rgba(201,136,42,.14);
+      --glow-gold-sm:0 0 10px rgba(201,136,42,.5);
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html { font-size:16px; }
+    body {
+      background:var(--void); color:var(--txt);
+      font-family:var(--font-body); line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      min-height:100dvh; overflow-x:hidden;
+    }
+    /* ── ลบ focus outline สีฟ้า ทุก interactive element ── */
+    *:focus { outline:none; }
+    *:focus-visible {
+      outline:1.5px solid var(--gold-dim);
+      outline-offset:3px;
+      border-radius:6px;
+    }
+    button:focus-visible, a:focus-visible,
+    [tabindex]:focus-visible, input:focus-visible,
+    select:focus-visible, textarea:focus-visible {
+      outline:1.5px solid var(--gold-dim);
+      outline-offset:3px;
+    }
+    a { color:var(--gold); text-decoration:none; }
+    a:hover { color:var(--gold-bright); }
+    button { font-family:var(--font-body); cursor:pointer; border:none; background:none; }
+    svg { display:block; }
+    ::selection { background:rgba(201,136,42,.18); color:var(--gold-bright); }
+
+    /* ── LAYOUT ── */
+    .page {
+      min-height:100dvh;
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+    }
+
+    /* ── HEADER ── */
+    .ob-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.25rem 2rem;
+      border-bottom:1px solid var(--border);
+      background:rgba(10,10,15,.85);
+      backdrop-filter:blur(12px);
+      position:sticky; top:0; z-index:100;
+    }
+    .ob-logo {
+      display:flex; align-items:center; gap:.6rem;
+      font-family:var(--font-display); font-size:.9rem; font-weight:700;
+      letter-spacing:.2em; text-transform:uppercase; color:var(--txt-sec);
+      user-select:none;
+    }
+    .logo-mark { width:28px; height:28px; flex-shrink:0; color:var(--gold); }
+
+    /* Step indicator */
+    .ob-steps {
+      display:flex; align-items:center; gap:.5rem;
+    }
+    .ob-step {
+      display:flex; align-items:center; gap:.4rem;
+      font-size:.65rem; font-weight:600; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--txt-muted);
+      transition:color var(--dur-base) var(--ease-out);
+    }
+    .ob-step.active { color:var(--gold); }
+    .ob-step.done   { color:var(--green-bright); }
+    .step-num {
+      width:22px; height:22px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-data); font-size:.7rem; font-weight:700;
+      background:var(--surf3); border:1px solid var(--border);
+      transition:background var(--dur-base),border-color var(--dur-base),color var(--dur-base);
+      flex-shrink:0;
+    }
+    .ob-step.active .step-num { background:rgba(201,136,42,.12); border-color:var(--gold-dim); color:var(--gold-bright); }
+    .ob-step.done   .step-num { background:rgba(39,174,96,.12); border-color:var(--green); color:var(--green-bright); }
+    .step-div { width:28px; height:1px; background:var(--border); flex-shrink:0; }
+
+    /* ── MAIN CONTENT ── */
+    .ob-body {
+      display:flex; align-items:center; justify-content:center;
+      padding:3rem 1.5rem;
+      position:relative; overflow:hidden;
+    }
+
+    /* Ambient glow bg */
+    .ob-body::before {
+      content:''; position:fixed;
+      top:30%; left:50%; transform:translate(-50%,-50%);
+      width:700px; height:500px;
+      background:radial-gradient(ellipse,rgba(201,136,42,.045) 0%,transparent 65%);
+      pointer-events:none; z-index:0;
+    }
+
+    .ob-panel {
+      position:relative; z-index:1;
+      width:100%; max-width:860px;
+    }
+
+    /* ── STEP VIEWS ── */
+    .step-view {
+      display:none;
+      animation:stepIn .45s var(--ease-out) both;
+    }
+    .step-view.active { display:block; }
+    @keyframes stepIn {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:none; }
+    }
+
+    /* ── STEP HEADER ── */
+    .step-eyebrow {
+      font-size:.6rem; font-weight:600; letter-spacing:.2em;
+      text-transform:uppercase; color:var(--gold-dim);
+      display:flex; align-items:center; gap:.55rem; margin-bottom:.75rem;
+    }
+    .step-eyebrow::before { content:''; width:18px; height:1px; background:var(--gold-dim); display:block; }
+    .step-title {
+      font-family:var(--font-display); font-size:clamp(1.5rem,3.5vw,2.2rem);
+      font-weight:900; letter-spacing:.04em; text-transform:uppercase;
+      color:var(--txt); margin-bottom:.5rem; line-height:1.1;
+    }
+    .step-title em { font-style:normal; color:var(--gold-bright); text-shadow:var(--glow-gold-sm); }
+    .step-sub { font-size:.88rem; color:var(--txt-sec); margin-bottom:2.25rem; max-width:520px; }
+
+    /* ══════════════════════════════════════
+       STEP 1 — ROLE SELECTION
+    ══════════════════════════════════════ */
+    .mode-toggle {
+      display:inline-flex; background:var(--surf2);
+      border:1px solid var(--border); border-radius:8px;
+      padding:3px; gap:3px; margin-bottom:1.75rem;
+    }
+    .mtoggle-btn {
+      padding:.45rem 1.1rem; border-radius:6px;
+      font-size:.75rem; font-weight:600; letter-spacing:.07em;
+      text-transform:uppercase; color:var(--txt-muted);
+      transition:background var(--dur-fast),color var(--dur-fast),box-shadow var(--dur-fast);
+      display:flex; align-items:center; gap:.45rem;
+    }
+    .mtoggle-btn.active {
+      background:var(--surf3); color:var(--gold-bright);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+    }
+    .mtoggle-btn:hover:not(.active) { color:var(--txt-sec); }
+
+    /* Random mode card */
+    .random-card {
+      display:none;
+      background:var(--surf1);
+      border:1px solid var(--border-glow);
+      border-radius:14px;
+      padding:2.5rem;
+      text-align:center;
+      position:relative; overflow:hidden;
+    }
+    .random-card.show { display:block; animation:stepIn .35s var(--ease-out) both; }
+    .random-card::before {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(ellipse at 50% 0%, rgba(201,136,42,.06) 0%, transparent 60%);
+      pointer-events:none;
+    }
+    .random-icon {
+      width:64px; height:64px; border-radius:16px;
+      background:rgba(201,136,42,.1); border:1px solid var(--gold-dim);
+      color:var(--gold-bright); margin:0 auto 1.25rem;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .random-title {
+      font-family:var(--font-display); font-size:1.3rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase; color:var(--txt);
+      margin-bottom:.5rem;
+    }
+    .random-desc { font-size:.86rem; color:var(--txt-sec); max-width:380px; margin:0 auto 1.5rem; line-height:1.7; }
+    .bonus-pill {
+      display:inline-flex; align-items:center; gap:.4rem;
+      background:rgba(201,136,42,.1); border:1px solid var(--gold-dim);
+      border-radius:999px; padding:.35rem .9rem;
+      font-family:var(--font-data); font-size:.8rem; font-weight:700;
+      color:var(--gold-bright); letter-spacing:.06em;
+    }
+
+    /* Choose mode grid */
+    .roles-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(196px, 1fr));
+      gap:.75rem;
+    }
+    .role-tile {
+      padding:1rem 1.1rem;
+      background:var(--surf1);
+      border:1.5px solid var(--border);
+      border-radius:10px;
+      cursor:pointer;
+      position:relative; overflow:hidden;
+      transition:border-color var(--dur-base) var(--ease-out),
+                 background  var(--dur-base) var(--ease-out),
+                 transform   var(--dur-fast) var(--ease-out);
+      user-select:none;
+    }
+    .role-tile:hover  { border-color:var(--border-glow); background:var(--surf2); }
+    .role-tile.chosen {
+      border-color:var(--gold);
+      background:rgba(201,136,42,.07);
+      box-shadow:0 0 0 1px var(--gold-dim) inset;
+    }
+    .role-tile:active { transform:scale(.97); }
+    .role-tile::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:2px;
+      background:var(--rc, var(--gold-dim));
+      opacity:0; transition:opacity var(--dur-base);
+    }
+    .role-tile.chosen::before, .role-tile:hover::before { opacity:1; }
+
+    .rt-top { display:flex; align-items:center; gap:.7rem; margin-bottom:.55rem; }
+    .rt-icon {
+      width:32px; height:32px; border-radius:7px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      background:color-mix(in srgb, var(--rc, var(--gold)) 12%, transparent);
+      border:1px solid color-mix(in srgb, var(--rc, var(--gold)) 28%, transparent);
+      color:var(--rc, var(--gold));
+    }
+    .rt-name {
+      font-family:var(--font-data); font-size:.88rem; font-weight:700;
+      letter-spacing:.06em; text-transform:uppercase;
+      color:var(--txt);
+    }
+    .rt-focus { font-size:.72rem; color:var(--txt-muted); line-height:1.5; }
+    .rt-check {
+      position:absolute; top:.65rem; right:.75rem;
+      width:18px; height:18px; border-radius:50%;
+      background:var(--gold); color:#07070b;
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; transform:scale(.5);
+      transition:opacity var(--dur-fast) var(--ease-out),
+                 transform var(--dur-base) var(--ease-out);
+    }
+    .role-tile.chosen .rt-check { opacity:1; transform:scale(1); }
+
+    /* ══════════════════════════════════════
+       STEP 2 — DAILY HABIT SEEDS
+    ══════════════════════════════════════ */
+    .habits-intro {
+      background:var(--surf1); border:1px solid var(--border);
+      border-radius:12px; padding:1rem 1.25rem;
+      display:flex; align-items:center; gap:.9rem;
+      margin-bottom:1.5rem;
+      font-size:.83rem; color:var(--txt-sec); line-height:1.55;
+    }
+    .habits-intro-icon {
+      width:36px; height:36px; border-radius:8px; flex-shrink:0;
+      background:rgba(201,136,42,.1); border:1px solid var(--gold-dim);
+      display:flex; align-items:center; justify-content:center; color:var(--gold);
+    }
+
+    .habit-seeds {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:.6rem; margin-bottom:1.5rem;
+    }
+    @media(max-width:560px) { .habit-seeds { grid-template-columns:1fr; } }
+
+    .hs-item {
+      display:flex; align-items:center; gap:.75rem;
+      padding:.8rem 1rem;
+      background:var(--surf1); border:1.5px solid var(--border);
+      border-radius:9px; cursor:pointer;
+      transition:border-color var(--dur-base),background var(--dur-base),
+                 transform var(--dur-fast);
+      user-select:none;
+    }
+    .hs-item:hover  { border-color:var(--border-glow); background:var(--surf2); }
+    .hs-item.on     { border-color:var(--gold); background:rgba(201,136,42,.07); }
+    .hs-item:active { transform:scale(.97); }
+    .hs-box {
+      width:20px; height:20px; border-radius:5px; flex-shrink:0;
+      border:1.5px solid var(--border);
+      background:var(--surf3);
+      display:flex; align-items:center; justify-content:center;
+      color:transparent;
+      transition:border-color var(--dur-fast),background var(--dur-fast),color var(--dur-fast);
+    }
+    .hs-item.on .hs-box { border-color:var(--gold); background:var(--gold); color:#07070b; }
+    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; }
+    .hs-exp {
+      font-family:var(--font-data); font-size:.72rem; font-weight:700;
+      color:var(--gold-bright); white-space:nowrap;
+    }
+
+    /* Custom habit add */
+    .habit-add-row {
+      display:flex; gap:.6rem; align-items:center;
+    }
+    .habit-input {
+      flex:1; height:42px;
+      background:var(--surf2); border:1px solid var(--border);
+      border-radius:8px; padding:0 1rem;
+      font-family:var(--font-body); font-size:.86rem; color:var(--txt);
+      outline:none;
+      transition:border-color var(--dur-fast),background var(--dur-fast),box-shadow var(--dur-fast);
+    }
+    .habit-input::placeholder { color:var(--txt-muted); }
+    .habit-input:focus { border-color:var(--gold-dim); background:var(--surf3); box-shadow:0 0 0 3px rgba(201,136,42,.09); }
+
+    /* ══════════════════════════════════════
+       STEP 3 — WELCOME REVEAL
+    ══════════════════════════════════════ */
+    .welcome-center {
+      text-align:center;
+      max-width:540px; margin:0 auto; padding:2rem 0;
+    }
+    .welcome-emblem {
+      width:96px; height:96px; border-radius:50%;
+      background:rgba(201,136,42,.1);
+      border:2px solid var(--gold-dim);
+      box-shadow:0 0 0 8px rgba(201,136,42,.05),
+                 0 0 0 16px rgba(201,136,42,.025);
+      margin:0 auto 2rem;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--gold-bright);
+      animation:emblemIn .8s var(--ease-out) .1s both;
+    }
+    @keyframes emblemIn {
+      from { opacity:0; transform:scale(.6); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    .welcome-title {
+      font-family:var(--font-display); font-size:clamp(1.8rem,4vw,2.6rem);
+      font-weight:900; letter-spacing:.05em; text-transform:uppercase;
+      color:var(--txt); margin-bottom:.6rem; line-height:1.1;
+    }
+    .welcome-title em { font-style:normal; color:var(--gold-bright); text-shadow:var(--glow-gold-sm); }
+    .welcome-sub { font-size:.9rem; color:var(--txt-sec); line-height:1.75; margin-bottom:2rem; }
+
+    .welcome-stats {
+      display:grid; grid-template-columns:repeat(3,1fr);
+      gap:1px; background:var(--border);
+      border:1px solid var(--border); border-radius:10px; overflow:hidden;
+      margin-bottom:2.25rem;
+    }
+    .ws {
+      background:var(--surf1); padding:1.1rem .75rem; text-align:center;
+    }
+    .ws-val {
+      font-family:var(--font-data); font-size:1.4rem; font-weight:700;
+      color:var(--gold-bright); letter-spacing:-.02em; line-height:1; margin-bottom:.3rem;
+    }
+    .ws-lbl {
+      font-size:.62rem; font-weight:500; letter-spacing:.12em;
+      text-transform:uppercase; color:var(--txt-muted);
+    }
+
+    /* Checklist summary */
+    .welcome-checklist {
+      display:flex; flex-direction:column; gap:.5rem;
+      text-align:left; margin-bottom:2rem;
+    }
+    .wc-item {
+      display:flex; align-items:center; gap:.75rem;
+      font-size:.84rem; color:var(--txt-sec);
+    }
+    .wc-icon {
+      width:28px; height:28px; border-radius:6px; flex-shrink:0;
+      background:rgba(39,174,96,.1); border:1px solid var(--green);
+      color:var(--green-bright);
+      display:flex; align-items:center; justify-content:center;
+    }
+
+    /* ── FOOTER NAV ── */
+    .ob-footer {
+      padding:1.5rem 2rem;
+      border-top:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:1rem;
+    }
+    .ob-progress {
+      display:flex; gap:.4rem; align-items:center;
+    }
+    .ob-prog-seg {
+      height:3px; width:32px; border-radius:99px;
+      background:var(--surf3);
+      transition:background var(--dur-base) var(--ease-out),width var(--dur-base);
+    }
+    .ob-prog-seg.done   { background:var(--gold-dim); }
+    .ob-prog-seg.active { background:var(--gold-bright); width:48px; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display:inline-flex; align-items:center; gap:.5rem;
+      font-family:var(--font-body); font-weight:700; font-size:.84rem;
+      letter-spacing:.08em; text-transform:uppercase;
+      border-radius:8px; border:1px solid transparent;
+      cursor:pointer; user-select:none;
+      transition:background var(--dur-fast) var(--ease-out),
+                 border-color var(--dur-fast) var(--ease-out),
+                 box-shadow var(--dur-fast) var(--ease-out),
+                 transform var(--dur-fast) var(--ease-out),
+                 color var(--dur-fast) var(--ease-out);
+      padding:.6rem 1.4rem; white-space:nowrap;
+    }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:var(--gold); color:#07070b; border-color:var(--gold); }
+    .btn-primary:hover { background:var(--gold-bright); border-color:var(--gold-bright); box-shadow:var(--glow-gold); }
+    .btn-primary:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn-ghost { background:transparent; color:var(--txt-muted); border-color:var(--border); }
+    .btn-ghost:hover { color:var(--txt); border-color:var(--border-glow); background:var(--surf2); }
+    .btn-lg { padding:.75rem 2rem; font-size:.9rem; }
+
+    /* Spinner */
+    .spinner {
+      width:16px; height:16px;
+      border:2px solid rgba(7,7,11,.2);
+      border-top-color:#07070b;
+      border-radius:50%;
+      animation:spin .7s linear infinite;
+      display:none; flex-shrink:0;
+    }
+    .btn.loading .spinner { display:block; }
+    .btn.loading .btn-label { display:none; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:640px) {
+      .ob-header { padding:1rem 1.25rem; }
+      .ob-body { padding:2rem 1rem; }
+      .ob-footer { padding:1.25rem 1rem; }
+      .ob-steps { display:none; }
+      .roles-grid { grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); }
+      .welcome-stats { grid-template-columns:repeat(3,1fr); }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ── HEADER ── -->
+  <header class="ob-header">
+    <div class="ob-logo">
+      <svg class="logo-mark" viewBox="0 0 100 100" fill="none" stroke="currentColor" aria-hidden="true">
+        <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" stroke-width="2.5" opacity="0.35"/>
+        <polygon points="50,12 84,31 84,69 50,88 16,69 16,31" stroke-width="1" opacity="0.15"/>
+        <path d="M28 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+        <path d="M72 26 L50 68" stroke-width="5.5" stroke-linecap="round"/>
+        <line x1="33" y1="42" x2="67" y2="42" stroke-width="3" stroke-linecap="round"/>
+        <line x1="21" y1="26" x2="35" y2="26" stroke-width="3" stroke-linecap="round"/>
+        <line x1="65" y1="26" x2="79" y2="26" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="68" r="3" fill="currentColor" stroke="none"/>
+      </svg>
+      VAELTHAR
+    </div>
+
+    <nav class="ob-steps" aria-label="ขั้นตอน">
+      <div class="ob-step active" id="hdr-s1">
+        <div class="step-num">1</div>
+        <span>เลือก Role</span>
+      </div>
+      <div class="step-div" aria-hidden="true"></div>
+      <div class="ob-step" id="hdr-s2">
+        <div class="step-num">2</div>
+        <span>ตั้ง Habit</span>
+      </div>
+      <div class="step-div" aria-hidden="true"></div>
+      <div class="ob-step" id="hdr-s3">
+        <div class="step-num">3</div>
+        <span>พร้อมแล้ว</span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── BODY ── -->
+  <main class="ob-body">
+    <div class="ob-panel">
+
+      <!-- ════════════════════
+           STEP 1 — ROLE
+      ════════════════════ -->
+      <section class="step-view active" id="view-1" aria-label="เลือก Role">
+        <div class="step-eyebrow">ขั้นตอนที่ 1 จาก 3</div>
+        <h1 class="step-title">เลือก <em>Role</em> ของคุณ</h1>
+        <p class="step-sub">Role กำหนดประเภท Quest ที่คุณจะได้รับ — เปลี่ยนได้ทุกต้นสัปดาห์ หรือเลือก Random เพื่อรับโบนัส EXP</p>
+
+        <div class="mode-toggle" role="group" aria-label="เลือกโหมด">
+          <button class="mtoggle-btn active" id="modeChoose" data-mode="choose" aria-pressed="true">
+            <span id="ic-choose"></span> เลือก Role เอง
+          </button>
+          <button class="mtoggle-btn" id="modeRandom" data-mode="random" aria-pressed="false">
+            <span id="ic-dice"></span> สุ่ม (Random)
+          </button>
+        </div>
+
+        <!-- Random card -->
+        <div class="random-card" id="randomCard" aria-hidden="true">
+          <div class="random-icon" id="ic-random-big"></div>
+          <div class="random-title">Random Mode</div>
+          <p class="random-desc">
+            Role จะถูกสุ่มใหม่ทุกเที่ยงคืน — คุณไม่รู้ล่วงหน้าว่าพรุ่งนี้จะเป็นใคร
+            แต่ทุก Quest ที่ทำสำเร็จให้ EXP มากกว่าปกติ
+          </p>
+          <div class="bonus-pill">
+            <span id="ic-exp-pill"></span>
+            +25% EXP ทุก Quest
+          </div>
+        </div>
+
+        <!-- Choose grid -->
+        <div class="roles-grid" id="rolesGrid" aria-label="รายชื่อ Role ทั้งหมด"></div>
+      </section>
+
+      <!-- ════════════════════
+           STEP 2 — HABITS
+      ════════════════════ -->
+      <section class="step-view" id="view-2" aria-label="ตั้ง Habit">
+        <div class="step-eyebrow">ขั้นตอนที่ 2 จาก 3</div>
+        <h1 class="step-title">เริ่มต้น <em>Habit</em> แรก</h1>
+        <p class="step-sub">Habit คือกิจกรรมประจำวันที่คุณสัญญากับตัวเอง ทำแล้วรับ EXP เพิ่มทุกวัน — เลือกที่ใช่สำหรับคุณก่อนได้เลย</p>
+
+        <div class="habits-intro">
+          <div class="habits-intro-icon" id="ic-habit-intro"></div>
+          <span>Habit ที่เลือกไว้จะโผล่ใน Dashboard ทุกวัน — กดเช็กเมื่อทำแล้วเพื่อรับ EXP streak พิเศษ</span>
+        </div>
+
+        <div class="habit-seeds" id="habitSeeds" role="group" aria-label="Habit แนะนำ"></div>
+
+        <div class="habit-add-row">
+          <input type="text" class="habit-input" id="customHabit" placeholder="เพิ่ม Habit ของตัวเอง..." maxlength="60" />
+          <button class="btn btn-ghost" id="addHabitBtn" aria-label="เพิ่ม Habit">
+            <span id="ic-plus-btn"></span>
+            <span class="btn-label">เพิ่ม</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- ════════════════════
+           STEP 3 — WELCOME
+      ════════════════════ -->
+      <section class="step-view" id="view-3" aria-label="ยินดีต้อนรับ">
+        <div class="welcome-center">
+          <div class="welcome-emblem" id="welcomeEmblem" aria-hidden="true">
+            <span id="ic-welcome-mark"></span>
+          </div>
+          <div class="step-eyebrow" style="justify-content:center">Season I — Ember of the Ashlands</div>
+          <h1 class="welcome-title">ยินดีต้อนรับ<br/>สู่ <em>VAELTHAR</em></h1>
+          <p class="welcome-sub" id="welcomeSub">บทแรกของตำนานเริ่มต้นแล้ว — Quest แรกรอคุณอยู่</p>
+
+          <div class="welcome-stats">
+            <div class="ws">
+              <div class="ws-val">Lv.1</div>
+              <div class="ws-lbl">Level</div>
+            </div>
+            <div class="ws">
+              <div class="ws-val" id="ws-role">—</div>
+              <div class="ws-lbl">Role</div>
+            </div>
+            <div class="ws">
+              <div class="ws-val" id="ws-habits">—</div>
+              <div class="ws-lbl">Habits</div>
+            </div>
+          </div>
+
+          <div class="welcome-checklist" id="welcomeChecklist" aria-label="สรุปสิ่งที่ตั้งค่าแล้ว"></div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- ── FOOTER ── -->
+  <footer class="ob-footer">
+    <div class="ob-progress" aria-label="ความคืบหน้า">
+      <div class="ob-prog-seg active" id="prog-1"></div>
+      <div class="ob-prog-seg"        id="prog-2"></div>
+      <div class="ob-prog-seg"        id="prog-3"></div>
+    </div>
+
+    <div style="display:flex;gap:.6rem;align-items:center;">
+      <button class="btn btn-ghost" id="backBtn" style="display:none" aria-label="ย้อนกลับ">
+        <span id="ic-back"></span>
+        <span class="btn-label">ย้อนกลับ</span>
+      </button>
+      <button class="btn btn-primary btn-lg" id="nextBtn">
+        <div class="spinner" aria-hidden="true"></div>
+        <span class="btn-label" id="nextLabel">ถัดไป</span>
+        <span id="ic-next"></span>
+      </button>
+    </div>
+  </footer>
+
+</div><!-- /page -->
+
+<script type="module">
+  import { icon } from '/icons.js';
+
+  /* ── ROLES DATA ── */
+  const ROLES = [
+    { key:'scholar',     name:'Scholar',     focus:'อ่าน · เรียน · สรุป',          rc:'#7b68ee' },
+    { key:'warlord',     name:'Warlord',     focus:'ออกกำลังกาย · ฝึกร่างกาย',    rc:'#e74c3c' },
+    { key:'warden',      name:'Warden',      focus:'รักษ์โลก · ความยั่งยืน',      rc:'#27ae60' },
+    { key:'culinart',    name:'Culinart',    focus:'ทำอาหาร · ทำขนม',             rc:'#e67e22' },
+    { key:'artisan',     name:'Artisan',     focus:'วาดภาพ · สร้างสรรค์',          rc:'#9b59b6' },
+    { key:'merchant',    name:'Merchant',    focus:'หาเงิน · ออมทรัพย์',          rc:'#f1c40f' },
+    { key:'envoy',       name:'Envoy',       focus:'ช่วยเหลือผู้อื่น',            rc:'#1abc9c' },
+    { key:'ascetic',     name:'Ascetic',     focus:'สมาธิ · Mindfulness',          rc:'#bdc3c7' },
+    { key:'pathfinder',  name:'Pathfinder',  focus:'สำรวจ · สถานที่ใหม่',         rc:'#d35400' },
+    { key:'chronicler',  name:'Chronicler',  focus:'ถ่ายรูป · บันทึกเรื่องราว',   rc:'#3498db' },
+    { key:'forgemaster', name:'Forgemaster', focus:'ซ่อมแซม · สร้างสิ่งของ',      rc:'#7f8c8d' },
+    { key:'bard',        name:'Bard',        focus:'ดนตรี · แต่งเพลง',            rc:'#e91e8c' },
+    { key:'sage',        name:'Sage',        focus:'สอนผู้อื่น · แบ่งปันความรู้', rc:'#f39c12' },
+    { key:'herald',      name:'Herald',      focus:'วิ่ง · GPS Tracking',          rc:'#00bcd4' },
+    { key:'paladin',     name:'Paladin',     focus:'บริการสังคม · ชุมชน',         rc:'#c9882a' },
+  ];
+
+  /* ── HABIT SEEDS ── */
+  const SEED_HABITS = [
+    { id:'h1', label:'อ่านหนังสือ 30 นาที',     exp:'+120 EXP' },
+    { id:'h2', label:'ออกกำลังกาย',              exp:'+150 EXP' },
+    { id:'h3', label:'ทำอาหารเองที่บ้าน',        exp:'+100 EXP' },
+    { id:'h4', label:'เขียน Journal',             exp:'+80 EXP'  },
+    { id:'h5', label:'นั่งสมาธิ 10 นาที',        exp:'+90 EXP'  },
+    { id:'h6', label:'วิ่งหรือเดิน 3 กม.',       exp:'+130 EXP' },
+    { id:'h7', label:'ดื่มน้ำให้ครบ 8 แก้ว',    exp:'+60 EXP'  },
+    { id:'h8', label:'ไม่โซเชียลก่อนเที่ยง',    exp:'+70 EXP'  },
+  ];
+
+  /* ── STATE ── */
+  let currentStep = 1;
+  let selectedMode = 'choose';   // 'choose' | 'random'
+  let selectedRole = null;       // role key string
+  let selectedHabits = new Set();
+  let customHabits = [];
+
+  /* ── INJECT STATIC ICONS ── */
+  document.getElementById('ic-choose').innerHTML      = icon('crown', 15);
+  document.getElementById('ic-dice').innerHTML        = icon('dice', 15);
+  document.getElementById('ic-random-big').innerHTML  = icon('dice', 30);
+  document.getElementById('ic-exp-pill').innerHTML    = icon('exp', 14);
+  document.getElementById('ic-habit-intro').innerHTML = icon('habit', 20);
+  document.getElementById('ic-plus-btn').innerHTML    = icon('plus', 15);
+  document.getElementById('ic-back').innerHTML        = icon('arrow_left', 16);
+  document.getElementById('ic-next').innerHTML        = icon('arrow_right', 16);
+  document.getElementById('ic-welcome-mark').innerHTML= icon('vaelthar_mark', 44);
+
+  /* ── BUILD ROLE GRID ── */
+  const grid = document.getElementById('rolesGrid');
+  grid.innerHTML = ROLES.map(r => `
+    <div class="role-tile" data-key="${r.key}" style="--rc:${r.rc}"
+         role="radio" aria-checked="false" tabindex="0"
+         aria-label="${r.name}: ${r.focus}">
+      <div class="rt-top">
+        <div class="rt-icon">${icon(r.key, 18)}</div>
+        <div class="rt-name">${r.name}</div>
+      </div>
+      <div class="rt-focus">${r.focus}</div>
+      <div class="rt-check">${icon('check', 10)}</div>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.role-tile').forEach(el => {
+    const pick = () => {
+      grid.querySelectorAll('.role-tile').forEach(t => {
+        t.classList.remove('chosen');
+        t.setAttribute('aria-checked', 'false');
+      });
+      el.classList.add('chosen');
+      el.setAttribute('aria-checked', 'true');
+      selectedRole = el.dataset.key;
+      updateNextBtn();
+    };
+    el.addEventListener('click', pick);
+    el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); pick(); } });
+  });
+
+  /* ── MODE TOGGLE ── */
+  document.getElementById('modeChoose').addEventListener('click', () => setMode('choose'));
+  document.getElementById('modeRandom').addEventListener('click', () => setMode('random'));
+
+  function setMode(mode) {
+    selectedMode = mode;
+    document.getElementById('modeChoose').classList.toggle('active', mode === 'choose');
+    document.getElementById('modeRandom').classList.toggle('active', mode === 'random');
+    document.getElementById('modeChoose').setAttribute('aria-pressed', mode === 'choose');
+    document.getElementById('modeRandom').setAttribute('aria-pressed', mode === 'random');
+    document.getElementById('randomCard').classList.toggle('show', mode === 'random');
+    document.getElementById('randomCard').setAttribute('aria-hidden', mode !== 'random');
+    grid.style.display = mode === 'choose' ? '' : 'none';
+    updateNextBtn();
+  }
+
+  /* ── BUILD HABIT SEEDS ── */
+  const seedsEl = document.getElementById('habitSeeds');
+  seedsEl.innerHTML = SEED_HABITS.map(h => `
+    <div class="hs-item" data-hid="${h.id}" role="checkbox" aria-checked="false"
+         tabindex="0" aria-label="${h.label}">
+      <div class="hs-box">${icon('check', 11)}</div>
+      <span class="hs-label">${h.label}</span>
+      <span class="hs-exp">${h.exp}</span>
+    </div>
+  `).join('');
+
+  seedsEl.querySelectorAll('.hs-item').forEach(el => {
+    const toggle = () => {
+      const on = el.classList.toggle('on');
+      el.setAttribute('aria-checked', on);
+      if (on) selectedHabits.add(el.dataset.hid);
+      else     selectedHabits.delete(el.dataset.hid);
+    };
+    el.addEventListener('click', toggle);
+    el.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); } });
+  });
+
+  /* ── CUSTOM HABIT ADD ── */
+  document.getElementById('addHabitBtn').addEventListener('click', addCustomHabit);
+  document.getElementById('customHabit').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addCustomHabit();
+  });
+
+  function addCustomHabit() {
+    const input = document.getElementById('customHabit');
+    const val = input.value.trim();
+    if (!val) return;
+    customHabits.push(val);
+
+    const el = document.createElement('div');
+    el.className = 'hs-item on';
+    el.dataset.hid = 'custom_' + Date.now();
+    el.setAttribute('role', 'checkbox');
+    el.setAttribute('aria-checked', 'true');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', val);
+    el.innerHTML = `
+      <div class="hs-box">${icon('check', 11)}</div>
+      <span class="hs-label">${val}</span>
+      <span class="hs-exp">+80 EXP</span>
+    `;
+    el.addEventListener('click', () => {
+      const on = el.classList.toggle('on');
+      el.setAttribute('aria-checked', on);
+      if (!on) {
+        customHabits = customHabits.filter(h => h !== val);
+        setTimeout(() => el.remove(), 200);
+      }
+    });
+    seedsEl.appendChild(el);
+    input.value = '';
+    input.focus();
+  }
+
+  /* ── STEP NAVIGATION ── */
+  const views   = [null, document.getElementById('view-1'), document.getElementById('view-2'), document.getElementById('view-3')];
+  const hdrSteps = [null, document.getElementById('hdr-s1'), document.getElementById('hdr-s2'), document.getElementById('hdr-s3')];
+  const progSegs  = [null, document.getElementById('prog-1'), document.getElementById('prog-2'), document.getElementById('prog-3')];
+
+  function goToStep(n) {
+    views[currentStep]?.classList.remove('active');
+    hdrSteps[currentStep]?.classList.remove('active');
+    hdrSteps[currentStep]?.classList.add('done');
+    progSegs[currentStep].classList.remove('active');
+    progSegs[currentStep].classList.add('done');
+
+    currentStep = n;
+    views[currentStep].classList.add('active');
+    hdrSteps.forEach((el, i) => {
+      if (!el) return;
+      if (i < n) { el.classList.add('done'); el.classList.remove('active'); }
+      if (i === n) { el.classList.add('active'); el.classList.remove('done'); }
+      if (i > n) { el.classList.remove('done','active'); }
+    });
+    progSegs.forEach((el, i) => {
+      if (!el) return;
+      el.className = 'ob-prog-seg' + (i < n ? ' done' : i === n ? ' active' : '');
+    });
+
+    document.getElementById('backBtn').style.display = n > 1 ? '' : 'none';
+
+    if (n === 3) buildWelcome();
+    updateNextBtn();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+
+  document.getElementById('backBtn').addEventListener('click', () => {
+    if (currentStep > 1) goToStep(currentStep - 1);
+  });
+
+  document.getElementById('nextBtn').addEventListener('click', async () => {
+    if (currentStep === 1) {
+      if (selectedMode === 'choose' && !selectedRole) return;
+      goToStep(2);
+    } else if (currentStep === 2) {
+      goToStep(3);
+    } else {
+      // Final — save & go to dashboard
+      const btn = document.getElementById('nextBtn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+      try {
+        const { saveOnboarding } = await import('/js/core/auth.js');
+        await saveOnboarding({ mode: selectedMode, role: selectedRole, habits: [...selectedHabits, ...customHabits] });
+      } catch (_) { /* ignore — still redirect */ }
+      window.location.href = 'dashboard.html';
+    }
+  });
+
+  function updateNextBtn() {
+    const btn    = document.getElementById('nextBtn');
+    const label  = document.getElementById('nextLabel');
+    const icNext = document.getElementById('ic-next');
+    if (currentStep === 1) {
+      const canProceed = selectedMode === 'random' || selectedRole;
+      btn.disabled = !canProceed;
+      label.textContent = 'ถัดไป';
+      icNext.innerHTML  = icon('arrow_right', 16);
+    } else if (currentStep === 2) {
+      btn.disabled = false;
+      label.textContent = 'ถัดไป';
+      icNext.innerHTML  = icon('arrow_right', 16);
+    } else {
+      btn.disabled = false;
+      label.textContent = 'เริ่มผจญภัย';
+      icNext.innerHTML  = icon('sword', 16);
+    }
+  }
+
+  /* ── BUILD WELCOME SUMMARY ── */
+  function buildWelcome() {
+    const roleName = selectedMode === 'random'
+      ? 'Random'
+      : (ROLES.find(r => r.key === selectedRole)?.name ?? '—');
+    const habitCount = selectedHabits.size + customHabits.length;
+
+    document.getElementById('ws-role').textContent   = roleName;
+    document.getElementById('ws-habits').textContent = habitCount;
+
+    document.getElementById('welcomeSub').textContent =
+      `คุณเป็น ${roleName === 'Random' ? 'นักผจญภัยผู้ท้าทายโชคชะตา' : roleName} — Quest แรกรอคุณอยู่ในวันนี้`;
+
+    const checks = [
+      { icon:'crown',  text: selectedMode === 'random' ? 'Random Mode — +25% EXP ทุก Quest' : `Role: ${roleName}` },
+      { icon:'habit',  text: habitCount > 0 ? `${habitCount} Habit ตั้งค่าแล้ว` : 'ยังไม่มี Habit (เพิ่มได้ทีหลัง)' },
+      { icon:'season', text: 'Season I: Ember of the Ashlands กำลังดำเนินอยู่' },
+    ];
+
+    document.getElementById('welcomeChecklist').innerHTML = checks.map(c => `
+      <div class="wc-item">
+        <div class="wc-icon">${icon(c.icon, 15)}</div>
+        <span>${c.text}</span>
+      </div>
+    `).join('');
+
+    document.getElementById('nextLabel').textContent = 'เริ่มผจญภัย';
+    document.getElementById('ic-next').innerHTML = icon('sword', 16);
+  }
+
+  updateNextBtn();
+</script>
+</body>
+</html>

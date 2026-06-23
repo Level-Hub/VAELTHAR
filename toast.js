@@ -14,7 +14,7 @@
      toast.custom({ title, message, icon, type, duration });
    ============================================================ */
 
-import { icon } from './icons.js';
+import { icon } from '/icons.js';
 
 
 /* ----------------------------------------------------------

@@ -11,10 +11,10 @@
      document.addEventListener('DOMContentLoaded', () => initSidebar());
    ============================================================ */
 
-import { icon }                            from './icons.js';
-import { currentState, logout }            from '../core/auth.js';
-import { store, STATE, getSidebarCollapsed, setSidebarCollapsed } from '../core/storage.js';
-import { navigate, _updateActiveLinks }    from '../core/router.js';
+import { icon }                            from '/icons.js';
+import { currentState, logout }            from '/auth.js';
+import { store, STATE, getSidebarCollapsed, setSidebarCollapsed } from '/storage.js';
+import { navigate, _updateActiveLinks }    from '/router.js';
 
 
 /* ----------------------------------------------------------

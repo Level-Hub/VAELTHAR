@@ -23,7 +23,7 @@ import {
   getWhere,
   upsert,
   TABLES,
-} from './api.js';
+} from '/api.js';
 
 
 /* ----------------------------------------------------------
