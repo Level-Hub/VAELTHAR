@@ -16,6 +16,7 @@
       font-family:var(--font-body); line-height:1.6;
       -webkit-font-smoothing:antialiased;
       min-height:100dvh; overflow-x:hidden;
+      max-width:100%;
     }
     /* ── ลบ focus outline สีฟ้า ทุก interactive element ── */
     *:focus { outline:none; }
@@ -50,12 +51,11 @@
     .ob-header {
       display:flex; align-items:center; justify-content:space-between;
       padding:1rem 1.25rem;
+      gap:.75rem; overflow:hidden;
       border-bottom:1px solid var(--border);
       background:rgba(10,10,15,.85);
       backdrop-filter:blur(12px);
       position:sticky; top:0; z-index:100;
-      overflow:hidden;
-      gap:.75rem;
     }
     .ob-logo {
       display:flex; align-items:center; gap:.6rem;
@@ -67,9 +67,8 @@
 
     /* Step indicator */
     .ob-steps {
-      display:flex; align-items:center; gap:.5rem;
-      flex-shrink:0;
-      overflow:hidden;
+      display:flex; align-items:center; gap:.35rem;
+      flex-shrink:0; overflow:hidden;
     }
     .ob-step {
       display:flex; align-items:center; gap:.4rem;
@@ -90,14 +89,6 @@
     .ob-step.active .step-num { background:rgba(201,136,42,.12); border-color:var(--gold-dim); color:var(--gold-bright); }
     .ob-step.done   .step-num { background:rgba(39,174,96,.12); border-color:var(--green); color:var(--green-bright); }
     .step-div { width:28px; height:1px; background:var(--border); flex-shrink:0; }
-    .ob-step span.step-label { display:inline; }
-
-    @media (max-width: 480px) {
-      .ob-step span.step-label { display:none; }
-      .step-div { width:16px; }
-      .ob-header { padding:.85rem 1rem; }
-      .ob-footer { padding:.85rem 1rem; }
-    }
 
     /* ── MAIN CONTENT ── */
     .ob-body {
@@ -303,7 +294,7 @@
       transition:border-color var(--dur-fast),background var(--dur-fast),color var(--dur-fast);
     }
     .hs-item.on .hs-box { border-color:var(--gold); background:var(--gold); color:#07070b; }
-    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; min-width:0; }
+    .hs-label { font-size:.82rem; font-weight:600; color:var(--txt); flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .hs-exp {
       font-family:var(--font-data); font-size:.72rem; font-weight:700;
       color:var(--gold-bright); white-space:nowrap; flex-shrink:0;
@@ -312,6 +303,7 @@
     /* Custom habit add */
     .habit-add-row {
       display:flex; gap:.6rem; align-items:center;
+      width:100%; min-width:0;
     }
     .habit-input {
       flex:1; height:42px;
@@ -352,7 +344,7 @@
       color:var(--txt); margin-bottom:.6rem; line-height:1.1;
     }
     .welcome-title em { font-style:normal; color:var(--gold-bright); text-shadow:var(--glow-gold-sm); }
-    .welcome-sub { font-size:.9rem; color:var(--txt-sec); line-height:1.75; margin-bottom:2rem; }
+    .welcome-sub { font-size:.9rem; color:var(--txt-sec); line-height:1.75; margin-bottom:2rem; overflow-wrap:break-word; word-break:break-word; }
 
     .welcome-stats {
       display:grid; grid-template-columns:repeat(3,1fr);
@@ -380,7 +372,9 @@
     .wc-item {
       display:flex; align-items:center; gap:.75rem;
       font-size:.84rem; color:var(--txt-sec);
+      min-width:0;
     }
+    .wc-item span { min-width:0; overflow-wrap:break-word; word-break:break-word; }
     .wc-icon {
       width:28px; height:28px; border-radius:6px; flex-shrink:0;
       background:rgba(39,174,96,.1); border:1px solid var(--green);
