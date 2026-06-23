@@ -1328,51 +1328,5 @@
     },{threshold:.08,rootMargin:'0px 0px -40px 0px'});
     document.querySelectorAll('.r').forEach(el => ro.observe(el));
   </script>
-
-  <!-- ── DEBUG BUTTON ── -->
-  <button id="dbgBtn" onclick="document.getElementById('dbgPanel').style.display=document.getElementById('dbgPanel').style.display==='none'?'block':'none'" style="
-    position:fixed;bottom:16px;right:16px;z-index:9999;
-    background:#1a1a24;border:1px solid #4a3f2a;color:#c9882a;
-    font-size:11px;font-family:monospace;letter-spacing:.05em;
-    padding:6px 10px;border-radius:6px;cursor:pointer;opacity:.85;
-  ">DBG</button>
-
-  <div id="dbgPanel" style="display:none;position:fixed;bottom:52px;right:16px;z-index:9999;
-    background:#0d0d14;border:1px solid #2e2e3a;border-radius:10px;
-    padding:12px;width:320px;max-height:60vh;overflow-y:auto;
-    font-family:monospace;font-size:11px;color:#e8e4d8;line-height:1.6;">
-    <div style="color:#f0b849;font-weight:bold;margin-bottom:8px;">VAELTHAR DEBUG</div>
-    <div id="dbgLog">กำลังตรวจสอบ...</div>
-  </div>
-
-  <script>
-    (function() {
-      const log = document.getElementById('dbgLog');
-      const lines = [];
-
-      function add(msg, color) {
-        lines.push('<div style="color:' + (color||'#e8e4d8') + '">' + msg + '</div>');
-        if (log) log.innerHTML = lines.join('');
-      }
-
-      // 1. Check icons.js
-      fetch('/icons.js')
-        .then(r => add('icons.js → ' + r.status + ' ' + (r.ok ? '✓' : '✗'), r.ok ? '#27ae60' : '#e74c3c'))
-        .catch(e => add('icons.js → FAIL: ' + e.message, '#e74c3c'));
-
-      // 2. Check key elements exist
-      const ids = ['roleCard','cardIcon','cardName','cardFocus','rolesGrid','roleDots','roleNext','rolePrev','nav','dayTrack'];
-      ids.forEach(id => {
-        const el = document.getElementById(id);
-        add('el #' + id + ' → ' + (el ? '✓' : 'NOT FOUND'), el ? '#27ae60' : '#e74c3c');
-      });
-
-      // 3. Catch JS errors
-      window.addEventListener('error', e => add('JS ERROR: ' + e.message + ' (line ' + e.lineno + ')', '#e74c3c'));
-      window.addEventListener('unhandledrejection', e => add('PROMISE ERR: ' + (e.reason?.message || e.reason), '#e74c3c'));
-
-      add('--- ตรวจสอบเสร็จ ---', '#5a5468');
-    })();
-  </script>
 </body>
 </html>
