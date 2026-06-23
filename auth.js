@@ -345,13 +345,17 @@ export async function logout() {
 export async function completeOnboarding(updates = {}) {
   if (!_user) throw new Error('Not authenticated');
 
-  const [updated] = await upsert(TABLES.PROFILES, {
-    id:                  _user.id,
-    onboarding_complete: true,
-    ...updates,
-  });
+  /* ใช้ UPDATE แทน upsert เพื่อไม่ให้ทับ NOT NULL columns เช่น display_name */
+  const { data, error } = await supabase
+    .from(TABLES.PROFILES)
+    .update({ onboarding_complete: true, ...updates })
+    .eq('id', _user.id)
+    .select()
+    .single();
 
-  _profile = { ..._profile, ...updated };
+  if (error) throw error;
+
+  _profile = { ..._profile, ...data };
 
   redirect(ROUTES.dashboard);
 }
