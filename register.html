@@ -675,11 +675,17 @@
         await register(email, pw, name, uname);
         window.location.href = 'onboarding.html';
       } catch(err) {
-        const m = err?.message || '';
-        if (m.includes('already') || m.includes('duplicate') || m.includes('unique')) {
-          showAlert('อีเมลหรือ Username นี้ถูกใช้งานแล้ว');
+        const m = (err?.message || '').toLowerCase();
+        if (m.includes('profiles_username_key') || m.includes('username')) {
+          showAlert('Username นี้ถูกใช้งานแล้ว กรุณาเลือก Username ใหม่');
+          showE('username', 'Username นี้ถูกใช้งานแล้ว');
+        } else if (m.includes('already registered') || m.includes('email')) {
+          showAlert('อีเมลนี้มีบัญชีอยู่แล้ว กรุณาเข้าสู่ระบบหรือใช้อีเมลอื่น');
+          showE('email', 'อีเมลนี้มีบัญชีอยู่แล้ว');
+        } else if (m.includes('duplicate') || m.includes('unique')) {
+          showAlert('ข้อมูลซ้ำในระบบ กรุณาตรวจสอบ Username และอีเมลอีกครั้ง');
         } else {
-          showAlert('เกิดข้อผิดพลาด กรุณาลองใหม่');
+          showAlert('เกิดข้อผิดพลาด: ' + (err?.message || 'กรุณาลองใหม่'));
         }
         sub.classList.remove('loading');
       }

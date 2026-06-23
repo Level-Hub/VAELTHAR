@@ -58,15 +58,20 @@
       letter-spacing: .2em; text-transform: uppercase;
       color: var(--txt); user-select: none;
     }
-    .nav-links {
-      display: flex; align-items: center; gap: 2.25rem; list-style: none;
+    .nav-clock {
+      display: flex; flex-direction: column; align-items: flex-end;
+      user-select: none;
     }
-    .nav-links a {
-      font-size: .76rem; font-weight: 500; letter-spacing: .1em;
+    .nav-clock-time {
+      font-family: var(--font-display);
+      font-size: .9rem; font-weight: 600; letter-spacing: .12em;
+      color: var(--gold); line-height: 1;
+    }
+    .nav-clock-date {
+      font-size: .58rem; font-weight: 400; letter-spacing: .12em;
       text-transform: uppercase; color: var(--txt-muted);
-      transition: color var(--dur-fast) var(--ease-out);
+      margin-top: .2rem;
     }
-    .nav-links a:hover { color: var(--txt); }
     .nav-actions { display: flex; align-items: center; gap: .55rem; }
 
     .btn {
@@ -742,12 +747,10 @@
       VAELTHAR
     </a>
 
-    <ul class="nav-links">
-      <li><a href="#how">วิธีเล่น</a></li>
-      <li><a href="#roles">Roles</a></li>
-      <li><a href="#day">A Day in the World</a></li>
-      <li><a href="ranking.html">Ranking</a></li>
-    </ul>
+    <div class="nav-clock" id="navClock">
+      <div class="nav-clock-time" id="clockTime">00:00:00</div>
+      <div class="nav-clock-date" id="clockDate">—</div>
+    </div>
 
   </nav>
 
@@ -1290,6 +1293,24 @@
     document.getElementById('rolePrev').addEventListener('click', () => { clearInterval(autoTimer); prev(); autoTimer = setInterval(next, 3000); });
 
     autoTimer = setInterval(next, 3000);
+
+    /* ─── NAV CLOCK (TH timezone) ─── */
+    const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์'];
+    const THAI_MONTHS = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    function tickClock() {
+      const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
+      const h = String(now.getHours()).padStart(2,'0');
+      const m = String(now.getMinutes()).padStart(2,'0');
+      const s = String(now.getSeconds()).padStart(2,'0');
+      document.getElementById('clockTime').textContent = `${h}:${m}:${s}`;
+      const day   = THAI_DAYS[now.getDay()];
+      const date  = now.getDate();
+      const month = THAI_MONTHS[now.getMonth()];
+      const year  = now.getFullYear() + 543;
+      document.getElementById('clockDate').textContent = `${day} ${date} ${month} ${year}`;
+    }
+    tickClock();
+    setInterval(tickClock, 1000);
 
     /* ─── NAV SCROLL ─── */
     const nav = document.getElementById('nav');
