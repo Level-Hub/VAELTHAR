@@ -92,64 +92,65 @@ Multiple ranking systems powered by live weather data and GPS.
 ## JS FILE STRUCTURE
 
 ```
-/js/
-  core/
-    api.js              — Supabase client + config
-    auth.js             — login / register / session
-    storage.js          — local state management
-    router.js           — SPA-style page routing
+/ (root — all JS files flat, no subfolders)
 
-  ui/
-    sidebar.js          — Shared sidebar across all pages
-    icons.js            — All SVG icons (no emoji used anywhere)
-    toast.js            — Popup notifications
-    modal.js            — Modal dialogs
-    theme.js            — Weather-based UI theme switching
+  — Core
+  api.js              — Supabase client + config
+  auth.js             — login / register / session
+  storage.js          — local state management
+  router.js           — SPA-style page routing
 
-  game/
-    quest.js            — Quest system + daily reset
-    habit.js            — Habit tracker + streak
-    role.js             — Role system (random/choose + Season lock)
-    exp.js              — EXP and level-up logic
-    weather.js          — Live weather fetch (OpenWeather API)
-    ranking.js          — All leaderboard types
-    title.js            — Title/epithet system
-    achievement.js      — Badge and achievement unlocks
-    season.js           — Season timer + reset + rewards
-    anti-cheat.js       — Verification Rate check (below 70% = excluded from Ranking)
+  — UI
+  sidebar.js          — Shared sidebar across all pages
+  icons.js            — All SVG icons (no emoji used anywhere)
+  toast.js            — Popup notifications
+  modal.js            — Modal dialogs
+  theme.js            — Weather-based UI theme switching
 
-  social/
-    guild.js            — Guild system (Personal + Organization)
-    party.js            — Party system
-    chat.js             — Supabase Realtime chat
-    profile.js          — Player profile and online status
-    friend.js           — Friends system
-    mood.js             — Mood log + graph
+  — Game
+  quest.js            — Quest system + daily reset
+  habit.js            — Habit tracker + streak
+  role.js             — Role system (random/choose + Season lock)
+  exp.js              — EXP and level-up logic
+  weather.js          — Live weather fetch (OpenWeather API)
+  ranking.js          — All leaderboard types
+  title.js            — Title/epithet system
+  achievement.js      — Badge and achievement unlocks
+  season.js           — Season timer + reset + rewards
+  anti-cheat.js       — Verification Rate check (below 70% = excluded from Ranking)
 
-  economy/
-    shop.js             — Cosmetic + Functional store
-    currency.js         — EXP Coin + Crystal + Premium currency management
-    topup.js            — Top-up flow
-    market.js           — Player marketplace
-    kyc.js              — KYC submission
-    gift.js             — Gift sending
-    subscription.js     — Vaelthar Pass monthly subscription
-    tournament.js       — Tournament entry + rewards
+  — Social
+  guild.js            — Guild system (Personal + Organization)
+  party.js            — Party system
+  chat.js             — Supabase Realtime chat
+  profile.js          — Player profile and online status
+  friend.js           — Friends system
+  mood.js             — Mood log + graph
 
-  trust/
-    blacklist.js        — Fetch and display blacklist
-    report.js           — Player report system
+  — Economy
+  shop.js             — Cosmetic + Functional store
+  currency.js         — EXP Coin + Crystal + Premium currency management
+  topup.js            — Top-up flow
+  market.js           — Player marketplace
+  kyc.js              — KYC submission
+  gift.js             — Gift sending
+  subscription.js     — Vaelthar Pass monthly subscription
+  tournament.js       — Tournament entry + rewards
 
-  admin/
-    dashboard.js
-    users.js
-    quests.js
-    topup-admin.js
-    reports.js
-    kyc-review.js
-    blacklist-admin.js
-    analytics.js
-    season-admin.js
+  — Trust
+  blacklist.js        — Fetch and display blacklist
+  report.js           — Player report system
+
+/admin/
+  dashboard.js
+  users.js
+  quests.js
+  topup-admin.js
+  reports.js
+  kyc-review.js
+  blacklist-admin.js
+  analytics.js
+  season-admin.js
 ```
 
 ---
@@ -350,6 +351,42 @@ ranking_snapshots   — Weekly and Season ranking snapshots
 - Public page, visible to all
 - Displays username + reason only (no personal information shown)
 
+
+---
+
+## QUEST SYSTEM
+
+### Quest Types
+| Type | Reset | Description |
+|------|-------|-------------|
+| Daily | Every midnight | ทำได้ทุกวัน — เน้น Role ของผู้เล่น |
+| Weekly | Every Monday | ยากกว่า EXP มากกว่า |
+| Special | Admin กำหนด | Event พิเศษ / Season quest |
+
+### Quest Creation
+- Admin สร้าง quest เท่านั้น — ผู้เล่นไม่สามารถสร้างเองได้
+- ป้องกันการโกงผ่าน preset criteria ที่ชัดเจน
+
+### Quest Submission
+- ผู้เล่นถ่ายรูปหลักฐานสด (camera only — ห้าม upload จาก gallery)
+- ระบบ auto-stamp ลงบนรูปอัตโนมัติ:
+  - Timestamp
+  - Quest name + username
+  - GPS coordinates (เฉพาะ quest ที่ต้องการ location)
+  - Watermark โลโก้ VAELTHAR
+- GPS ใช้เฉพาะ quest ที่สมเหตุสมผล เช่น วิ่ง/เดิน, check-in สถานที่
+- GPS coordinates มองเห็นได้เฉพาะ Admin — user อื่นไม่เห็น
+
+### Verification Flow
+1. ผู้เล่น submit รูปหลักฐาน
+2. Community vote เปิด **2 ชั่วโมง**
+3. ถ้าไม่โดน reject เกินครึ่ง → auto approve → EXP เข้า
+4. ถ้าโดน reject เกินครึ่ง → ไม่ได้ EXP + verification rate ลด
+5. Admin override ได้ตลอดเวลา (approve หรือ reject)
+
+### Anti-Cheat
+- Verification rate ต่ำกว่า 70% → EXP จาก quest นั้นถูกตัดออกจาก Ranking ทุกประเภท
+
 ---
 
 ## MISSING PIECES (to build)
@@ -359,34 +396,71 @@ ranking_snapshots   — Weekly and Season ranking snapshots
 
 ---
 
-## BUILD ORDER
+## BUILD ORDER & PROGRESS
 
 ```
-Phase 1 — Foundation
-  design-tokens.css
-  icons.js          ← build first, every page depends on it
-  api.js → auth.js → storage.js → router.js
-  sidebar.js → toast.js → modal.js
+Phase 1 — Foundation                                    ✅ COMPLETE
+  design-tokens.css                                     ✅ done
+  icons.js                                              ✅ done
+  api.js                                                ✅ done
+  auth.js                                               ✅ done
+  storage.js                                            ✅ done
+  router.js                                             ✅ done
+  sidebar.js                                            ✅ done
+  toast.js                                              ✅ done
+  modal.js                                              ✅ done
 
-Phase 2 — User System
-  register → onboarding → login → dashboard → profile → role
+Phase 2 — User System                                   🔄 IN PROGRESS
+  index.html    (landing page)                          ✅ done
+  register.html                                         ✅ done
+  login.html                                            ✅ done
+  onboarding.html                                       ✅ done
+  dashboard.html                                        ✅ done
+  profile.html                                          ✅ done
+  role.html                                             ⬜ not started
 
-Phase 3 — Game Loop
-  quest → habit → exp → achievement → season → ranking
+Phase 3 — Game Loop                                     ⬜ NOT STARTED
+  quest.html + quest.js
+  habit.html + habit.js
+  exp.js
+  achievement.html + achievement.js
+  season.html + season.js
+  ranking.html + ranking.js
 
-Phase 4 — Social
-  guild → party → chat → friend → mood
+Phase 4 — Social                                        ⬜ NOT STARTED
+  guild.html + guild.js
+  party.html + party.js
+  chat.html + chat.js
+  friend.html + friend.js
+  mood.html + mood.js
 
-Phase 5 — Economy
-  shop → topup → market → kyc → blacklist → gift → subscription
+Phase 5 — Economy                                       ⬜ NOT STARTED
+  shop.html + shop.js
+  topup.html + topup.js
+  market.html + market.js
+  kyc.html + kyc.js
+  blacklist.html + blacklist.js
+  gift.html + gift.js
+  subscription.js
 
-Phase 6 — Admin
-  admin/index → users → quests → topup → kyc-review
-  → blacklist → analytics → season-admin
+Phase 6 — Admin                                         ⬜ NOT STARTED
+  admin/index.html
+  admin/users.html
+  admin/quests.html
+  admin/topup.html
+  admin/kyc-review.html
+  admin/blacklist.html
+  admin/analytics.html
+  admin/season.html
 
-Phase 7 — Advanced Features
-  weather theme → GPS check-in → tournament
-  → Regional ranking → Organization Guild → World Boss
+Phase 7 — Advanced Features                             ⬜ NOT STARTED
+  theme.js        (weather-based UI theme)
+  checkin.html    (GPS check-in + EXP)
+  tournament.html + tournament.js
+  ranking.js      (regional + role rankings)
+  anti-cheat.js
+  weather.js      (OpenWeather API)
+  notification.html
 ```
 
 ---

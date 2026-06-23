@@ -304,22 +304,6 @@
       color:var(--gold-bright); white-space:nowrap; flex-shrink:0; justify-self:end;
     }
 
-    /* Custom habit add */
-    .habit-add-row {
-      display:flex; gap:.6rem; align-items:center;
-      width:100%; min-width:0; overflow:hidden;
-    }
-    .habit-add-btn { flex-shrink:0; padding:.6rem .9rem; white-space:nowrap; }
-    .habit-input {
-      flex:1; min-width:0; height:42px;
-      background:var(--surf2); border:1px solid var(--border);
-      border-radius:8px; padding:0 1rem;
-      font-family:var(--font-body); font-size:.86rem; color:var(--txt);
-      outline:none;
-      transition:border-color var(--dur-fast),background var(--dur-fast),box-shadow var(--dur-fast);
-    }
-    .habit-input::placeholder { color:var(--txt-muted); }
-    .habit-input:focus { border-color:var(--gold-dim); background:var(--surf3); box-shadow:0 0 0 3px rgba(201,136,42,.09); }
 
     /* ══════════════════════════════════════
        STEP 3 — WELCOME REVEAL
@@ -449,7 +433,7 @@
       .ob-panel { width:100%; max-width:100%; }
       .roles-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); }
       .welcome-stats { grid-template-columns:repeat(3,1fr); }
-      .habit-add-row { flex-wrap:nowrap; }
+      
       .step-title { font-size:1.4rem; }
       .step-sub { font-size:.8rem; }
       .hs-item { padding:.7rem .75rem; gap:.6rem; }
@@ -559,13 +543,6 @@
 
         <div class="habit-seeds" id="habitSeeds" role="group" aria-label="Habit แนะนำ"></div>
 
-        <div class="habit-add-row">
-          <input type="text" class="habit-input" id="customHabit" placeholder="เพิ่ม Habit ของตัวเอง..." maxlength="60" />
-          <button class="btn btn-ghost habit-add-btn" id="addHabitBtn" aria-label="เพิ่ม Habit">
-            <span id="ic-plus-btn"></span>
-            <span class="btn-label">เพิ่ม</span>
-          </button>
-        </div>
       </section>
 
       <!-- ════════════════════
@@ -664,7 +641,6 @@
   let selectedMode = 'choose';   // 'choose' | 'random'
   let selectedRole = null;       // role key string
   let selectedHabits = new Set();
-  let customHabits = [];
 
   /* ── INJECT STATIC ICONS ── */
   document.getElementById('ic-choose').innerHTML      = icon('crown', 15);
@@ -746,42 +722,6 @@
   });
 
   /* ── CUSTOM HABIT ADD ── */
-  document.getElementById('addHabitBtn').addEventListener('click', addCustomHabit);
-  document.getElementById('customHabit').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addCustomHabit();
-  });
-
-  function addCustomHabit() {
-    const input = document.getElementById('customHabit');
-    const val = input.value.trim();
-    if (!val) return;
-    customHabits.push(val);
-
-    const el = document.createElement('div');
-    el.className = 'hs-item on';
-    el.dataset.hid = 'custom_' + Date.now();
-    el.setAttribute('role', 'checkbox');
-    el.setAttribute('aria-checked', 'true');
-    el.setAttribute('tabindex', '0');
-    el.setAttribute('aria-label', val);
-    el.innerHTML = `
-      <div class="hs-box">${icon('check', 11)}</div>
-      <span class="hs-label">${val}</span>
-      <span class="hs-exp">+80 EXP</span>
-    `;
-    el.addEventListener('click', () => {
-      const on = el.classList.toggle('on');
-      el.setAttribute('aria-checked', on);
-      if (!on) {
-        customHabits = customHabits.filter(h => h !== val);
-        setTimeout(() => el.remove(), 200);
-      }
-    });
-    seedsEl.appendChild(el);
-    input.value = '';
-    input.focus();
-  }
-
   /* ── STEP NAVIGATION ── */
   const views   = [null, document.getElementById('view-1'), document.getElementById('view-2'), document.getElementById('view-3')];
   const hdrSteps = [null, document.getElementById('hdr-s1'), document.getElementById('hdr-s2'), document.getElementById('hdr-s3')];
@@ -853,7 +793,7 @@
         }
 
         // 2. Save selected habits to habits table
-        const allHabits = [...selectedHabits, ...customHabits].filter(Boolean);
+        const allHabits = [...selectedHabits].filter(Boolean);
         if (allHabits.length) {
           await supabase.from('habits').insert(
             allHabits.map(title => ({
@@ -899,7 +839,7 @@
     const roleName = selectedMode === 'random'
       ? 'Random'
       : (ROLES.find(r => r.key === selectedRole)?.name ?? '—');
-    const habitCount = selectedHabits.size + customHabits.length;
+    const habitCount = selectedHabits.size;
 
     document.getElementById('ws-role').textContent   = roleName;
     document.getElementById('ws-habits').textContent = habitCount;
