@@ -1096,295 +1096,6 @@
     if (!authState?.user) throw new Error('no user');
     const { user, profile } = authState;
 
-    /* ── DEBUG PANEL ── */
-    (function setupDebugPanel() {
-      // ─── Styles ───────────────────────────────────────────
-      const style = document.createElement('style');
-      style.textContent = `
-        #dbg-fab {
-          position:fixed; bottom:80px; right:16px; z-index:10000;
-          width:48px; height:48px; border-radius:50%;
-          background:#c9882a; border:none; cursor:pointer;
-          display:flex; align-items:center; justify-content:center;
-          box-shadow:0 4px 16px rgba(0,0,0,.5);
-          font-size:20px; color:#fff;
-          transition:transform .15s;
-        }
-        #dbg-fab:active { transform:scale(.9); }
-        #dbg-overlay {
-          display:none; position:fixed; inset:0; z-index:9999;
-          background:rgba(0,0,0,.85); overflow-y:auto;
-          padding:16px; font-family:monospace; font-size:12px; color:#e0e0e0;
-        }
-        #dbg-overlay.open { display:block; }
-        .dbg-close {
-          position:sticky; top:0; right:0; float:right;
-          background:#c9882a; color:#fff; border:none; border-radius:8px;
-          padding:6px 14px; font-size:13px; cursor:pointer; margin-bottom:12px;
-        }
-        .dbg-section {
-          background:#1a1a2e; border:1px solid #333; border-radius:10px;
-          padding:12px; margin-bottom:12px;
-        }
-        .dbg-section h4 {
-          color:#c9882a; font-size:11px; letter-spacing:.1em;
-          text-transform:uppercase; margin:0 0 8px; font-family:monospace;
-        }
-        .dbg-btn {
-          display:inline-block; margin:4px 4px 4px 0;
-          padding:8px 14px; background:#2a2a3e; border:1px solid #555;
-          border-radius:20px; color:#e0e0e0; font-size:12px;
-          cursor:pointer; font-family:monospace;
-          transition:background .15s, border-color .15s;
-        }
-        .dbg-btn:active { background:#3a3a5e; border-color:#c9882a; }
-        .dbg-btn.ok  { border-color:#27ae60; color:#2ecc71; }
-        .dbg-btn.err { border-color:#e74c3c; color:#ff6b6b; }
-        .dbg-btn.run { border-color:#c9882a; color:#f1c40f; }
-        #dbg-log {
-          background:#0d0d1a; border:1px solid #333; border-radius:8px;
-          padding:10px; min-height:80px; max-height:260px; overflow-y:auto;
-          white-space:pre-wrap; word-break:break-all; font-size:11px;
-          color:#a0ffb0; line-height:1.6;
-        }
-        .dbg-kv { margin:2px 0; }
-        .dbg-key { color:#f1c40f; }
-        .dbg-val { color:#a0c8ff; }
-        .dbg-err { color:#ff6b6b; }
-        .dbg-ok  { color:#2ecc71; }
-      `;
-      document.head.appendChild(style);
-
-      // ─── FAB button ──────────────────────────────────────
-      const fab = document.createElement('button');
-      fab.id = 'dbg-fab';
-      fab.title = 'Debug Panel';
-      fab.innerHTML = '🐛';
-      document.body.appendChild(fab);
-
-      // ─── Overlay ─────────────────────────────────────────
-      const overlay = document.createElement('div');
-      overlay.id = 'dbg-overlay';
-      overlay.innerHTML = `
-        <button class="dbg-close" id="dbg-close-btn">✕ ปิด</button>
-        <div style="clear:both;"></div>
-
-        <!-- Auth State -->
-        <div class="dbg-section">
-          <h4>Auth State</h4>
-          <div id="dbg-auth-state">กำลังโหลด...</div>
-        </div>
-
-        <!-- Store State -->
-        <div class="dbg-section">
-          <h4>Store State</h4>
-          <div id="dbg-store-state">กำลังโหลด...</div>
-        </div>
-
-        <!-- Supabase Fetch Tests -->
-        <div class="dbg-section">
-          <h4>ทดสอบ Fetch แต่ละส่วน</h4>
-          <button class="dbg-btn" data-fn="profile">Profile</button>
-          <button class="dbg-btn" data-fn="role">Role</button>
-          <button class="dbg-btn" data-fn="exp">EXP Logs</button>
-          <button class="dbg-btn" data-fn="quests">Quests</button>
-          <button class="dbg-btn" data-fn="habits">Habits</button>
-          <button class="dbg-btn" data-fn="mood">Mood</button>
-          <button class="dbg-btn" data-fn="ranking">Ranking</button>
-          <button class="dbg-btn" data-fn="season">Season</button>
-          <button class="dbg-btn" data-fn="party">Party</button>
-          <button class="dbg-btn" data-fn="guild">Guild</button>
-        </div>
-
-        <!-- Reload All -->
-        <div class="dbg-section">
-          <h4>Actions</h4>
-          <button class="dbg-btn run" id="dbg-reload-all">🔄 Reload All Data</button>
-          <button class="dbg-btn run" id="dbg-check-tables">📋 List Tables Access</button>
-          <button class="dbg-btn" id="dbg-clear-log" style="color:#e74c3c;border-color:#e74c3c;">🗑 Clear Log</button>
-        </div>
-
-        <!-- Log Output -->
-        <div class="dbg-section">
-          <h4>Log Output</h4>
-          <div id="dbg-log">รอคำสั่ง...</div>
-        </div>
-      `;
-      document.body.appendChild(overlay);
-
-      // ─── Helpers ─────────────────────────────────────────
-      let logEl;
-      function getLog() { return logEl || (logEl = document.getElementById('dbg-log')); }
-
-      function log(msg, type = '') {
-        const el = getLog();
-        const ts = new Date().toLocaleTimeString('th-TH');
-        const color = type === 'err' ? '#ff6b6b' : type === 'ok' ? '#2ecc71' : '#a0ffb0';
-        el.innerHTML += `<span style="color:#666;">[${ts}]</span> <span style="color:${color};">${escHtml(msg)}</span>\n`;
-        el.scrollTop = el.scrollHeight;
-      }
-
-      function logObj(label, obj) {
-        log(`── ${label} ──`);
-        if (!obj) { log('  NULL / undefined', 'err'); return; }
-        try {
-          const txt = JSON.stringify(obj, null, 2);
-          log(txt.slice(0, 1200) + (txt.length > 1200 ? '\n...(ตัด)' : ''));
-        } catch(e) { log('  (serialize error)', 'err'); }
-      }
-
-      function escHtml(s) {
-        return String(s)
-          .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      }
-
-      function kv(key, val) {
-        return `<div class="dbg-kv"><span class="dbg-key">${escHtml(key)}:</span> <span class="dbg-val">${escHtml(String(val ?? 'null'))}</span></div>`;
-      }
-
-      // ─── Render Auth State ────────────────────────────────
-      function renderAuthState() {
-        const el = document.getElementById('dbg-auth-state');
-        if (!el) return;
-        el.innerHTML =
-          kv('user.id',    user?.id ?? 'NULL') +
-          kv('user.email', user?.email ?? 'NULL') +
-          kv('profile.display_name', profile?.display_name ?? 'NULL') +
-          kv('profile.onboarding_complete', profile?.onboarding_complete ?? 'NULL') +
-          kv('profile.is_admin', profile?.is_admin ?? 'NULL');
-      }
-
-      function renderStoreState() {
-        const el = document.getElementById('dbg-store-state');
-        if (!el) return;
-        const u = store.get(STATE.USER);
-        const p = store.get(STATE.PROFILE);
-        el.innerHTML =
-          kv('store.USER.id',    u?.id?.slice(0,8) ?? 'NULL') +
-          kv('store.USER.email', u?.email ?? 'NULL') +
-          kv('store.PROFILE.display_name', p?.display_name ?? 'NULL') +
-          kv('store.SIDEBAR_OPEN', store.get(STATE.SIDEBAR_OPEN) ?? 'NULL');
-      }
-
-      // ─── Fetch test map ───────────────────────────────────
-      const fetchTests = {
-        profile: async () => {
-          const { data, error } = await supabase.from('profiles').select('*').eq('id', user.id).single();
-          return { data, error };
-        },
-        role: async () => {
-          const { data, error } = await supabase.from('user_roles').select('role_id, mode, roles(name, key, color)').eq('user_id', user.id).limit(1).maybeSingle();
-          return { data, error };
-        },
-        exp: async () => {
-          const { data, error } = await supabase.from('exp_logs').select('amount').eq('user_id', user.id);
-          const total = data ? data.reduce((s,r) => s + (r.amount||0), 0) : 0;
-          return { data: { rows: data?.length ?? 0, total_exp: total }, error };
-        },
-        quests: async () => {
-          const { data, error } = await supabase.from('user_quests').select('id, status, quests(id,title,type,exp_reward)').eq('user_id', user.id).in('status',['accepted','completed']).limit(5);
-          return { data, error };
-        },
-        habits: async () => {
-          const { data, error } = await supabase.from('habits').select('id, title, is_active').eq('user_id', user.id).limit(10);
-          return { data, error };
-        },
-        mood: async () => {
-          const today = new Date().toISOString().split('T')[0];
-          const { data, error } = await supabase.from('mood_logs').select('mood, logged_date').eq('user_id', user.id).eq('logged_date', today).maybeSingle();
-          return { data, error };
-        },
-        ranking: async () => {
-          const { data, error } = await supabase.from('exp_logs').select('user_id, amount').limit(100);
-          return { data: { rows: data?.length ?? 0, sample: data?.slice(0,3) }, error };
-        },
-        season: async () => {
-          const { data, error } = await supabase.from('seasons').select('*').eq('is_active', true).maybeSingle();
-          return { data, error };
-        },
-        party: async () => {
-          const { data, error } = await supabase.from('party_members').select('party_id, parties(id,name)').eq('user_id', user.id).maybeSingle();
-          return { data, error };
-        },
-        guild: async () => {
-          const { data, error } = await supabase.from('guild_members').select('role, guilds(id,name,member_count,total_exp)').eq('user_id', user.id).maybeSingle();
-          return { data, error };
-        },
-      };
-
-      async function runFetch(name, btn) {
-        const fn = fetchTests[name];
-        if (!fn) return;
-        btn.classList.remove('ok','err');
-        btn.classList.add('run');
-        btn.textContent = name + ' ⏳';
-        log(`เริ่ม fetch: ${name}...`);
-        try {
-          const result = await fn();
-          if (result.error) {
-            log(`${name} ERROR: ${result.error.message || JSON.stringify(result.error)}`, 'err');
-            btn.classList.remove('run'); btn.classList.add('err');
-            btn.textContent = name + ' ✗';
-          } else {
-            logObj(name + ' DATA', result.data);
-            btn.classList.remove('run'); btn.classList.add('ok');
-            btn.textContent = name + ' ✓';
-          }
-        } catch(e) {
-          log(`${name} EXCEPTION: ${e.message}`, 'err');
-          btn.classList.remove('run'); btn.classList.add('err');
-          btn.textContent = name + ' ✗';
-        }
-      }
-
-      async function checkTables() {
-        const tables = ['profiles','user_roles','roles','exp_logs','user_quests','quests','habits','habit_logs','mood_logs','exp_logs','seasons','party_members','parties','guild_members','guilds'];
-        log('── ตรวจสอบสิทธิ์ access แต่ละ table ──');
-        for (const t of tables) {
-          try {
-            const { data, error } = await supabase.from(t).select('id').limit(1);
-            if (error) log(`  ${t}: ✗ ${error.message}`, 'err');
-            else log(`  ${t}: ✓ (${data?.length ?? 0} rows)`, 'ok');
-          } catch(e) {
-            log(`  ${t}: EXCEPTION ${e.message}`, 'err');
-          }
-        }
-      }
-
-      // ─── Toggle panel ─────────────────────────────────────
-      fab.addEventListener('click', () => {
-        overlay.classList.add('open');
-        renderAuthState();
-        renderStoreState();
-        getLog(); // init ref
-      });
-
-      document.getElementById('dbg-close-btn').addEventListener('click', () => {
-        overlay.classList.remove('open');
-      });
-
-      // ─── Fetch test buttons ───────────────────────────────
-      overlay.querySelectorAll('[data-fn]').forEach(btn => {
-        btn.addEventListener('click', () => runFetch(btn.dataset.fn, btn));
-      });
-
-      document.getElementById('dbg-reload-all').addEventListener('click', async () => {
-        log('🔄 กำลัง Reload all data...');
-        for (const [name] of Object.entries(fetchTests)) {
-          const btn = overlay.querySelector(`[data-fn="${name}"]`);
-          if (btn) await runFetch(name, btn);
-        }
-        log('✅ เสร็จ', 'ok');
-      });
-
-      document.getElementById('dbg-check-tables').addEventListener('click', checkTables);
-
-      document.getElementById('dbg-clear-log').addEventListener('click', () => {
-        getLog().innerHTML = '';
-      });
-
-    })();
-    /* ── END DEBUG PANEL ── */
 
     /* ── ROLE GUARD — ถ้ายังไม่มี role ให้กลับ onboarding ── */
     {
@@ -1926,6 +1637,157 @@
       loadParty(),
       loadGuild(),
     ]);
+
+    /* ── DEBUG PANEL ── */
+    ;(function() {
+      const _u = user;
+      const _p = profile;
+      const _sb = supabase;
+      const _store = store;
+      const _STATE = STATE;
+
+      const _style = document.createElement('style');
+      _style.textContent = `
+        #dbg-fab{position:fixed;bottom:80px;right:16px;z-index:10000;width:48px;height:48px;border-radius:50%;background:#c9882a;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,.5);font-size:20px;color:#fff;transition:transform .15s;}
+        #dbg-fab:active{transform:scale(.9);}
+        #dbg-overlay{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);overflow-y:auto;padding:16px;font-family:monospace;font-size:12px;color:#e0e0e0;}
+        #dbg-overlay.open{display:block;}
+        .dbg-close{position:sticky;top:0;right:0;float:right;background:#c9882a;color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;margin-bottom:12px;}
+        .dbg-section{background:#1a1a2e;border:1px solid #333;border-radius:10px;padding:12px;margin-bottom:12px;}
+        .dbg-section h4{color:#c9882a;font-size:11px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px;}
+        .dbg-btn{display:inline-block;margin:4px 4px 4px 0;padding:8px 14px;background:#2a2a3e;border:1px solid #555;border-radius:20px;color:#e0e0e0;font-size:12px;cursor:pointer;font-family:monospace;transition:background .15s,border-color .15s;}
+        .dbg-btn:active{background:#3a3a5e;border-color:#c9882a;}
+        .dbg-btn.ok{border-color:#27ae60;color:#2ecc71;}
+        .dbg-btn.err{border-color:#e74c3c;color:#ff6b6b;}
+        .dbg-btn.run{border-color:#c9882a;color:#f1c40f;}
+        #dbg-log{background:#0d0d1a;border:1px solid #333;border-radius:8px;padding:10px;min-height:80px;max-height:260px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;font-size:11px;color:#a0ffb0;line-height:1.6;}
+      `;
+      document.head.appendChild(_style);
+
+      const _fab = document.createElement('button');
+      _fab.id = 'dbg-fab'; _fab.title = 'Debug'; _fab.innerHTML = '🐛';
+      document.body.appendChild(_fab);
+
+      const _ov = document.createElement('div');
+      _ov.id = 'dbg-overlay';
+      _ov.innerHTML = `
+        <button class="dbg-close" id="dbg-close-btn">✕ ปิด</button>
+        <div style="clear:both"></div>
+        <div class="dbg-section"><h4>Auth State</h4><div id="dbg-auth"></div></div>
+        <div class="dbg-section"><h4>Store State</h4><div id="dbg-store"></div></div>
+        <div class="dbg-section">
+          <h4>Fetch Tests</h4>
+          <button class="dbg-btn" data-fn="profile">Profile</button>
+          <button class="dbg-btn" data-fn="role">Role</button>
+          <button class="dbg-btn" data-fn="exp">EXP Logs</button>
+          <button class="dbg-btn" data-fn="quests">Quests</button>
+          <button class="dbg-btn" data-fn="habits">Habits</button>
+          <button class="dbg-btn" data-fn="mood">Mood</button>
+          <button class="dbg-btn" data-fn="ranking">Ranking</button>
+          <button class="dbg-btn" data-fn="season">Season</button>
+          <button class="dbg-btn" data-fn="party">Party</button>
+          <button class="dbg-btn" data-fn="guild">Guild</button>
+        </div>
+        <div class="dbg-section">
+          <h4>Actions</h4>
+          <button class="dbg-btn run" id="dbg-run-all">🔄 Run All</button>
+          <button class="dbg-btn run" id="dbg-tables">📋 Check Tables</button>
+          <button class="dbg-btn" id="dbg-clear" style="color:#e74c3c;border-color:#e74c3c;">🗑 Clear</button>
+        </div>
+        <div class="dbg-section"><h4>Log</h4><div id="dbg-log">รอคำสั่ง...</div></div>
+      `;
+      document.body.appendChild(_ov);
+
+      let _logEl = null;
+      function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+      function _log(msg, type){
+        if(!_logEl) _logEl = document.getElementById('dbg-log');
+        const c = type==='err'?'#ff6b6b':type==='ok'?'#2ecc71':'#a0ffb0';
+        const ts = new Date().toLocaleTimeString('th-TH');
+        _logEl.innerHTML += `<span style="color:#555">[${ts}]</span> <span style="color:${c}">${_esc(msg)}</span>\n`;
+        _logEl.scrollTop = _logEl.scrollHeight;
+      }
+      function _logObj(label, obj){
+        _log('── '+label+' ──');
+        if(obj==null){_log('  NULL','err');return;}
+        try{const t=JSON.stringify(obj,null,2);_log(t.slice(0,1400)+(t.length>1400?'\n...(ตัด)':''));}
+        catch(e){_log('serialize err','err');}
+      }
+      function _kv(k,v){return `<div style="margin:2px 0"><span style="color:#f1c40f">${_esc(k)}:</span> <span style="color:#a0c8ff">${_esc(String(v??'null'))}</span></div>`;}
+
+      function _renderState(){
+        const authEl = document.getElementById('dbg-auth');
+        if(authEl) authEl.innerHTML =
+          _kv('user.id', _u?.id?.slice(0,8)??'NULL') +
+          _kv('user.email', _u?.email??'NULL') +
+          _kv('profile.display_name', _p?.display_name??'NULL') +
+          _kv('profile.onboarding_complete', _p?.onboarding_complete??'NULL');
+        const stEl = document.getElementById('dbg-store');
+        if(stEl){
+          const su = _store.get(_STATE.USER);
+          const sp = _store.get(_STATE.PROFILE);
+          stEl.innerHTML =
+            _kv('store.USER.id', su?.id?.slice(0,8)??'NULL') +
+            _kv('store.USER.email', su?.email??'NULL') +
+            _kv('store.PROFILE.display_name', sp?.display_name??'NULL') +
+            _kv('store.SIDEBAR_OPEN', _store.get(_STATE.SIDEBAR_OPEN)??'NULL');
+        }
+      }
+
+      const _tests = {
+        profile: ()=> _sb.from('profiles').select('*').eq('id',_u.id).single(),
+        role:    ()=> _sb.from('user_roles').select('role_id,mode,roles(name,key,color)').eq('user_id',_u.id).limit(1).maybeSingle(),
+        exp:     async()=>{ const{data,error}=await _sb.from('exp_logs').select('amount').eq('user_id',_u.id); return{data:{rows:data?.length??0,total:data?.reduce((s,r)=>s+(r.amount||0),0)??0},error}; },
+        quests:  ()=> _sb.from('user_quests').select('id,status,quests(id,title,type,exp_reward)').eq('user_id',_u.id).in('status',['accepted','completed']).limit(5),
+        habits:  ()=> _sb.from('habits').select('id,title,is_active').eq('user_id',_u.id).limit(10),
+        mood:    ()=> _sb.from('mood_logs').select('mood,logged_date').eq('user_id',_u.id).eq('logged_date',new Date().toISOString().split('T')[0]).maybeSingle(),
+        ranking: async()=>{ const{data,error}=await _sb.from('exp_logs').select('user_id,amount').limit(100); return{data:{rows:data?.length??0,sample:data?.slice(0,3)},error}; },
+        season:  ()=> _sb.from('seasons').select('*').eq('is_active',true).maybeSingle(),
+        party:   ()=> _sb.from('party_members').select('party_id,parties(id,name)').eq('user_id',_u.id).maybeSingle(),
+        guild:   ()=> _sb.from('guild_members').select('role,guilds(id,name,member_count,total_exp)').eq('user_id',_u.id).maybeSingle(),
+      };
+
+      async function _runFetch(name, btn){
+        btn.classList.remove('ok','err'); btn.classList.add('run'); btn.textContent=name+' ⏳';
+        _log('fetch: '+name+'...');
+        try{
+          const r = await _tests[name]();
+          if(r.error){ _log(name+' ERROR: '+(r.error.message||JSON.stringify(r.error)),'err'); btn.classList.remove('run'); btn.classList.add('err'); btn.textContent=name+' ✗'; }
+          else{ _logObj(name, r.data); btn.classList.remove('run'); btn.classList.add('ok'); btn.textContent=name+' ✓'; }
+        }catch(e){ _log(name+' EXCEPTION: '+e.message,'err'); btn.classList.remove('run'); btn.classList.add('err'); btn.textContent=name+' ✗'; }
+      }
+
+      _fab.addEventListener('click', ()=>{ _ov.classList.add('open'); _renderState(); });
+      document.getElementById('dbg-close-btn').addEventListener('click', ()=> _ov.classList.remove('open'));
+      document.getElementById('dbg-clear').addEventListener('click', ()=>{ if(!_logEl)_logEl=document.getElementById('dbg-log'); _logEl.innerHTML=''; });
+
+      _ov.querySelectorAll('[data-fn]').forEach(btn=>{
+        btn.addEventListener('click', ()=> _runFetch(btn.dataset.fn, btn));
+      });
+
+      document.getElementById('dbg-run-all').addEventListener('click', async()=>{
+        _log('🔄 running all...');
+        for(const [name] of Object.entries(_tests)){
+          const btn = _ov.querySelector(`[data-fn="${name}"]`);
+          if(btn) await _runFetch(name, btn);
+        }
+        _log('✅ done','ok');
+      });
+
+      document.getElementById('dbg-tables').addEventListener('click', async()=>{
+        const tables=['profiles','user_roles','roles','exp_logs','user_quests','quests','habits','habit_logs','mood_logs','seasons','party_members','parties','guild_members','guilds'];
+        _log('── ตรวจ table access ──');
+        for(const t of tables){
+          try{
+            const{data,error}=await _sb.from(t).select('id').limit(1);
+            if(error) _log('  '+t+': ✗ '+error.message,'err');
+            else _log('  '+t+': ✓ ('+( data?.length??0)+' rows)','ok');
+          }catch(e){ _log('  '+t+': EXCEPTION '+e.message,'err'); }
+        }
+      });
+
+    })();
+    /* ── END DEBUG PANEL ── */
 
   </script>
 
