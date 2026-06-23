@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Profile — VAELTHAR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── TOKENS ─────────────────────────────────────────────── */
+    :root {
+      --void:        #0a0a0f;
+      --surf1:       #111118;
+      --surf2:       #18181f;
+      --surf3:       #22222c;
+      --border:      #2e2e3a;
+      --border-glow: #4a3f2a;
+
+      --gold-dim:    #7a5c1e;
+      --gold:        #c9882a;
+      --gold-bright: #f0b849;
+      --gold-glow:   rgba(201,136,42,.16);
+
+      --red:         #c0392b;
+      --red-bright:  #e74c3c;
+      --green:       #1e7a4a;
+      --green-bright:#27ae60;
+      --blue-bright: #2980b9;
+
+      --txt:         #e8e4d8;
+      --txt-sec:     #9a9098;
+      --txt-muted:   #5a5468;
+      --txt-gold:    #f0b849;
+
+      --font-display:'Cinzel',Georgia,serif;
+      --font-data:   'Rajdhani','Courier New',monospace;
+      --font-body:   'Inter',system-ui,sans-serif;
+
+      --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 18px; --r-pill: 999px;
+
+      --ease-out:    cubic-bezier(.16,1,.3,1);
+      --dur-fast:    120ms;
+      --dur-base:    240ms;
+
+      --glow-gold:   0 0 16px rgba(201,136,42,.5), 0 0 48px rgba(201,136,42,.15);
+      --glow-gold-sm:0 0 8px rgba(201,136,42,.45);
+      --glow-green:  0 0 8px rgba(39,174,96,.5);
+
+      --sidebar-w: 240px;
+      --sidebar-collapsed: 64px;
+    }
+
+    /* ── RESET ── */
+    *,*::before,*::after {
+      box-sizing:border-box; margin:0; padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+    html { font-size:16px; scroll-behavior:smooth; }
+    body {
+      background:var(--void);
+      color:var(--txt);
+      font-family:var(--font-body);
+      font-size:.9375rem;
+      line-height:1.6;
+      min-height:100dvh;
+      -webkit-font-smoothing:antialiased;
+      display:flex;
+    }
+    img,svg { display:block; max-width:100%; }
+    a { color:var(--gold); text-decoration:none; }
+    button { font-family:var(--font-body); cursor:pointer; border:none; background:none; }
+
+    /* ── ลบกรอบสีฟ้าทั้งหมด ── */
+    *:focus { outline:none; }
+    *:focus-visible { outline:1px solid var(--gold-dim); outline-offset:3px; border-radius:var(--r-sm); }
+
+    /* ── LAYOUT ── */
+    #sidebar-root { flex-shrink:0; }
+    .main-content {
+      flex:1;
+      margin-left:var(--sidebar-w);
+      padding:2rem 2rem 4rem;
+      max-width:1200px;
+      transition:margin-left var(--dur-base) var(--ease-out);
+    }
+    .main-content.sidebar-collapsed { margin-left:var(--sidebar-collapsed); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display:flex; align-items:center;
+      justify-content:space-between;
+      margin-bottom:2rem;
+    }
+    .page-label {
+      font-family:var(--font-display);
+      font-size:.6875rem;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+      margin-bottom:.25rem;
+    }
+    .page-title {
+      font-family:var(--font-display);
+      font-size:1.5rem;
+      font-weight:700;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      color:var(--txt);
+    }
+
+    /* ── BTN ── */
+    .btn {
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-family:var(--font-body); font-weight:600;
+      font-size:.8125rem; letter-spacing:.06em;
+      text-transform:uppercase;
+      border-radius:var(--r-md); border:1px solid transparent;
+      cursor:pointer; white-space:nowrap; user-select:none;
+      transition:background var(--dur-fast) var(--ease-out),
+                 border-color var(--dur-fast) var(--ease-out),
+                 box-shadow var(--dur-fast) var(--ease-out),
+                 color var(--dur-fast) var(--ease-out);
+      padding:.5rem 1.1rem;
+    }
+    .btn:active { transform:scale(.97); }
+    .btn-primary { background:var(--gold); color:#07070b; border-color:var(--gold); }
+    .btn-primary:hover { background:var(--gold-bright); border-color:var(--gold-bright); box-shadow:var(--glow-gold); }
+    .btn-outline { background:transparent; color:var(--txt-sec); border-color:var(--border); }
+    .btn-outline:hover { border-color:var(--gold-dim); color:var(--txt); background:rgba(201,136,42,.05); }
+    .btn-ghost { background:transparent; color:var(--txt-sec); }
+    .btn-ghost:hover { color:var(--txt); background:var(--surf2); }
+
+    /* ── PROFILE HERO ── */
+    .profile-hero {
+      position:relative;
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:2rem;
+      margin-bottom:1.5rem;
+      overflow:hidden;
+    }
+    .profile-hero::before {
+      content:'';
+      position:absolute;
+      top:0; right:0;
+      width:240px; height:240px;
+      background:radial-gradient(circle at top right, rgba(201,136,42,.07) 0%, transparent 65%);
+      pointer-events:none;
+    }
+    .profile-hero::after {
+      content:'';
+      position:absolute;
+      bottom:-1px; left:0; right:0; height:1px;
+      background:linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+    }
+
+    .profile-top {
+      display:flex;
+      align-items:flex-start;
+      gap:1.75rem;
+    }
+
+    /* Avatar */
+    .avatar-wrap {
+      position:relative;
+      flex-shrink:0;
+    }
+    .avatar-ring {
+      width:100px; height:100px;
+      border-radius:50%;
+      background:var(--surf3);
+      border:2px solid var(--border-glow);
+      box-shadow:var(--glow-gold-sm);
+      object-fit:cover;
+      overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+    }
+    .avatar-ring svg { opacity:.35; }
+    .online-dot {
+      position:absolute;
+      bottom:5px; right:5px;
+      width:14px; height:14px;
+      border-radius:50%;
+      background:var(--green-bright);
+      box-shadow:var(--glow-green);
+      border:2.5px solid var(--void);
+    }
+    .avatar-edit-btn {
+      position:absolute;
+      bottom:-6px; left:50%; transform:translateX(-50%);
+      background:var(--surf2);
+      border:1px solid var(--border);
+      color:var(--txt-muted);
+      border-radius:var(--r-pill);
+      padding:.15rem .55rem;
+      font-size:.65rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      text-transform:uppercase;
+      display:flex; align-items:center; gap:.25rem;
+      transition:color var(--dur-fast), border-color var(--dur-fast);
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .avatar-edit-btn:hover { color:var(--gold); border-color:var(--gold-dim); }
+
+    /* Info block */
+    .profile-info { flex:1; min-width:0; }
+    .profile-name-row {
+      display:flex; align-items:center; gap:.75rem;
+      margin-bottom:.3rem;
+      flex-wrap:wrap;
+    }
+    .profile-name {
+      font-family:var(--font-display);
+      font-size:1.45rem;
+      font-weight:700;
+      letter-spacing:.04em;
+      color:var(--txt);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .verified-badge {
+      display:inline-flex; align-items:center; gap:.3rem;
+      font-family:var(--font-data);
+      font-size:.65rem;
+      font-weight:600;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      color:var(--blue-bright);
+      background:rgba(41,128,185,.1);
+      border:1px solid rgba(41,128,185,.28);
+      border-radius:var(--r-pill);
+      padding:.15rem .55rem;
+    }
+    .profile-uid {
+      font-family:var(--font-data);
+      font-size:.75rem;
+      color:var(--txt-muted);
+      letter-spacing:.06em;
+      margin-bottom:.8rem;
+    }
+
+    .profile-role-row {
+      display:flex; align-items:center; gap:.5rem;
+      margin-bottom:1rem;
+      flex-wrap:wrap;
+    }
+    .role-badge {
+      display:inline-flex; align-items:center; gap:.35rem;
+      font-family:var(--font-data);
+      font-size:.75rem; font-weight:600;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:.25rem .7rem;
+      border-radius:var(--r-pill);
+      background:rgba(201,136,42,.12);
+      border:1px solid var(--gold-dim);
+      color:var(--gold-bright);
+    }
+    .mode-tag {
+      font-size:.6875rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      color:var(--txt-muted);
+      background:var(--surf3);
+      border:1px solid var(--border);
+      border-radius:var(--r-pill);
+      padding:.15rem .5rem;
+    }
+
+    /* EXP bar */
+    .exp-meta {
+      display:flex; align-items:baseline;
+      justify-content:space-between;
+      margin-bottom:.4rem;
+    }
+    .exp-level {
+      font-family:var(--font-data);
+      font-size:1.4rem; font-weight:700;
+      color:var(--gold-bright);
+      letter-spacing:-.02em; line-height:1;
+    }
+    .exp-level span {
+      font-size:.7rem; font-weight:500;
+      color:var(--txt-muted); letter-spacing:.06em;
+      margin-left:.25rem;
+    }
+    .exp-numbers {
+      font-family:var(--font-data);
+      font-size:.8125rem; color:var(--txt-sec);
+    }
+    .exp-numbers strong { color:var(--gold); font-weight:600; }
+    .exp-track {
+      width:100%; height:7px;
+      background:var(--surf3);
+      border-radius:var(--r-pill);
+      overflow:hidden;
+    }
+    .exp-fill {
+      height:100%;
+      background:linear-gradient(90deg, var(--gold), var(--gold-bright));
+      border-radius:var(--r-pill);
+      box-shadow:0 0 8px rgba(201,136,42,.5);
+      transition:width .8s var(--ease-out);
+    }
+
+    /* Stat row */
+    .profile-stats-row {
+      display:flex; gap:1.5rem;
+      margin-top:1.25rem;
+      padding-top:1.25rem;
+      border-top:1px solid var(--border);
+      flex-wrap:wrap;
+    }
+    .stat-item { display:flex; align-items:center; gap:.5rem; }
+    .stat-item svg { color:var(--txt-muted); flex-shrink:0; }
+    .stat-val {
+      font-family:var(--font-data);
+      font-size:1.0625rem; font-weight:700;
+      color:var(--txt); letter-spacing:-.01em; line-height:1;
+    }
+    .stat-lbl {
+      font-size:.6875rem; color:var(--txt-muted);
+      letter-spacing:.04em; text-transform:uppercase;
+    }
+
+    /* Bio */
+    .profile-bio-row {
+      margin-top:1rem;
+      padding-top:1rem;
+      border-top:1px solid var(--border);
+    }
+    .profile-bio {
+      font-size:.875rem;
+      color:var(--txt-sec);
+      line-height:1.65;
+    }
+    .profile-bio.empty { color:var(--txt-muted); font-style:italic; }
+
+    /* ── SECTION HEAD ── */
+    .section-head {
+      display:flex; align-items:center;
+      justify-content:space-between;
+      margin-bottom:1rem;
+    }
+    .section-title {
+      display:flex; align-items:center; gap:.6rem;
+      font-family:var(--font-display);
+      font-size:.8125rem; font-weight:600;
+      letter-spacing:.14em; text-transform:uppercase;
+      color:var(--txt-sec);
+    }
+    .section-title svg { color:var(--gold-dim); }
+    .section-link {
+      font-size:.75rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em;
+      color:var(--txt-muted);
+      text-transform:uppercase;
+      display:flex; align-items:center; gap:.3rem;
+      transition:color var(--dur-fast) var(--ease-out);
+    }
+    .section-link:hover { color:var(--gold); }
+
+    /* ── GRID ── */
+    .profile-grid {
+      display:grid;
+      grid-template-columns:1fr 320px;
+      gap:1.25rem;
+      align-items:start;
+    }
+    @media(max-width:900px) {
+      .profile-grid { grid-template-columns:1fr; }
+    }
+
+    /* ── CARD BASE ── */
+    .card {
+      background:var(--surf1);
+      border:1px solid var(--border);
+      border-radius:var(--r-xl);
+      padding:1.5rem;
+      margin-bottom:1.25rem;
+    }
+    .card:last-child { margin-bottom:0; }
+
+    /* ── ACHIEVEMENT WALL ── */
+    .achievement-grid {
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(90px, 1fr));
+      gap:.75rem;
+    }
+    .ach-tile {
+      display:flex; flex-direction:column;
+      align-items:center; gap:.4rem;
+      padding:.85rem .5rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      text-align:center;
+      transition:border-color var(--dur-fast), background var(--dur-fast);
+    }
+    .ach-tile.unlocked {
+      border-color:var(--border-glow);
+      background:rgba(201,136,42,.05);
+    }
+    .ach-tile.unlocked:hover {
+      border-color:var(--gold-dim);
+      background:rgba(201,136,42,.09);
+    }
+    .ach-tile.locked {
+      opacity:.38;
+      filter:grayscale(1);
+    }
+    .ach-icon {
+      width:36px; height:36px;
+      border-radius:50%;
+      background:var(--surf3);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--gold-dim);
+    }
+    .ach-tile.unlocked .ach-icon {
+      background:rgba(201,136,42,.14);
+      color:var(--gold-bright);
+    }
+    .ach-name {
+      font-size:.6rem;
+      font-family:var(--font-data);
+      letter-spacing:.05em;
+      text-transform:uppercase;
+      color:var(--txt-muted);
+      line-height:1.3;
+    }
+    .ach-tile.unlocked .ach-name { color:var(--txt-sec); }
+
+    /* ── QUEST HISTORY ── */
+    .quest-list { display:flex; flex-direction:column; gap:.65rem; }
+    .quest-entry {
+      display:flex; align-items:flex-start; gap:.875rem;
+      padding:.75rem 1rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      position:relative;
+      transition:border-color var(--dur-fast), background var(--dur-fast);
+    }
+    .quest-entry::before {
+      content:'';
+      position:absolute;
+      left:0; top:25%; bottom:25%;
+      width:2px; border-radius:var(--r-pill);
+      background:var(--green-bright);
+    }
+    .quest-icon {
+      width:32px; height:32px;
+      border-radius:var(--r-md);
+      background:var(--surf3);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--gold-dim); flex-shrink:0;
+    }
+    .quest-body { flex:1; min-width:0; }
+    .quest-name {
+      font-size:.875rem; font-weight:500;
+      color:var(--txt); margin-bottom:.15rem;
+    }
+    .quest-meta {
+      display:flex; align-items:center; gap:.6rem;
+      flex-wrap:wrap;
+    }
+    .quest-exp {
+      font-family:var(--font-data);
+      font-size:.75rem; font-weight:600;
+      color:var(--gold); letter-spacing:.04em;
+    }
+    .quest-date {
+      font-family:var(--font-data);
+      font-size:.7rem; color:var(--txt-muted); letter-spacing:.04em;
+    }
+    .quest-role-tag {
+      font-size:.65rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em; text-transform:uppercase;
+      color:var(--txt-muted);
+      background:var(--surf3);
+      border:1px solid var(--border);
+      border-radius:var(--r-pill);
+      padding:.1rem .45rem;
+    }
+
+    /* ── RIGHT COLUMN ── */
+
+    /* Guild card */
+    .guild-card {
+      display:flex; align-items:center; gap:.875rem;
+      padding:1rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-lg);
+      margin-bottom:.75rem;
+      transition:border-color var(--dur-fast);
+    }
+    .guild-card:hover { border-color:var(--border-glow); }
+    .guild-emblem {
+      width:44px; height:44px;
+      border-radius:var(--r-md);
+      background:var(--surf3);
+      border:1px solid var(--border-glow);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--gold-dim); flex-shrink:0;
+    }
+    .guild-info { flex:1; min-width:0; }
+    .guild-name {
+      font-family:var(--font-display);
+      font-size:.875rem; font-weight:600;
+      letter-spacing:.06em; color:var(--txt);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .guild-role-tag {
+      font-size:.68rem;
+      font-family:var(--font-data);
+      letter-spacing:.06em; text-transform:uppercase;
+      color:var(--gold-dim);
+    }
+    .guild-members {
+      display:flex; align-items:center; gap:.3rem;
+      font-family:var(--font-data);
+      font-size:.75rem; color:var(--txt-muted);
+    }
+
+    /* Party card */
+    .party-members-list {
+      display:flex; flex-direction:column; gap:.5rem;
+    }
+    .party-member {
+      display:flex; align-items:center; gap:.7rem;
+      padding:.5rem .75rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-md);
+    }
+    .party-avatar {
+      width:32px; height:32px;
+      border-radius:50%;
+      background:var(--surf3);
+      display:flex; align-items:center; justify-content:center;
+      color:var(--txt-muted);
+      position:relative; flex-shrink:0;
+      font-family:var(--font-display);
+      font-size:.8rem; font-weight:700;
+      color:var(--gold-dim);
+    }
+    .party-member-name {
+      flex:1; font-size:.875rem; color:var(--txt-sec);
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .party-member-level {
+      font-family:var(--font-data);
+      font-size:.75rem; color:var(--txt-muted);
+    }
+
+    /* Mood mini chart */
+    .mood-row {
+      display:flex; align-items:flex-end; gap:4px;
+      height:48px;
+    }
+    .mood-bar {
+      flex:1;
+      border-radius:var(--r-sm) var(--r-sm) 0 0;
+      min-height:4px;
+      transition:height .4s var(--ease-out);
+    }
+    .mood-labels {
+      display:flex; justify-content:space-between;
+      margin-top:.4rem;
+    }
+    .mood-label {
+      font-family:var(--font-data);
+      font-size:.6rem; color:var(--txt-muted);
+      letter-spacing:.04em;
+    }
+
+    /* Stats mini */
+    .stat-list { display:flex; flex-direction:column; gap:.5rem; }
+    .stat-row {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:.5rem .75rem;
+      background:var(--surf2);
+      border:1px solid var(--border);
+      border-radius:var(--r-md);
+    }
+    .stat-row-label {
+      display:flex; align-items:center; gap:.5rem;
+      font-size:.8125rem; color:var(--txt-sec);
+    }
+    .stat-row-label svg { color:var(--txt-muted); }
+    .stat-row-val {
+      font-family:var(--font-data);
+      font-size:.9rem; font-weight:700;
+      color:var(--txt);
+    }
+    .stat-row-val.gold { color:var(--gold-bright); }
+
+    /* Title display */
+    .title-chip {
+      display:inline-flex; align-items:center; gap:.4rem;
+      font-family:var(--font-display);
+      font-size:.7rem; font-weight:600;
+      letter-spacing:.1em; text-transform:uppercase;
+      color:var(--gold-bright);
+      background:rgba(201,136,42,.1);
+      border:1px solid var(--gold-dim);
+      border-radius:var(--r-pill);
+      padding:.3rem .75rem;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align:center;
+      padding:2.5rem 1rem;
+      color:var(--txt-muted);
+    }
+    .empty-state svg { margin:0 auto .75rem; opacity:.3; }
+    .empty-state p { font-size:.85rem; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:800px) {
+      .main-content { margin-left:0; padding:1.25rem 1rem 4rem; }
+      .profile-top { flex-direction:column; align-items:center; text-align:center; }
+      .profile-name-row { justify-content:center; }
+      .profile-role-row { justify-content:center; }
+      .profile-stats-row { justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="sidebar-root"></div>
+
+  <main class="main-content" id="mainContent">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <div>
+        <div class="page-label">Adventurer</div>
+        <div class="page-title" id="pageTitle">Player Profile</div>
+      </div>
+      <div style="display:flex;gap:.6rem;" id="headerActions">
+        <!-- injected by JS: Edit Profile or Add Friend -->
+      </div>
+    </div>
+
+    <!-- PROFILE HERO -->
+    <div class="profile-hero">
+      <div class="profile-top">
+
+        <!-- Avatar -->
+        <div class="avatar-wrap">
+          <div class="avatar-ring" id="avatarEl">
+            <!-- icon injected -->
+          </div>
+          <div class="online-dot" id="onlineDot" title="Online"></div>
+          <button class="avatar-edit-btn" id="avatarEditBtn" style="display:none">
+            <!-- icon + text injected -->
+          </button>
+        </div>
+
+        <!-- Info -->
+        <div class="profile-info">
+          <div class="profile-name-row">
+            <div class="profile-name" id="displayName">—</div>
+            <div class="verified-badge" id="verifiedBadge" style="display:none">
+              <!-- icon + text injected -->
+            </div>
+          </div>
+          <div class="profile-uid" id="profileUid">@—</div>
+
+          <div class="profile-role-row">
+            <div class="role-badge" id="roleBadge">— Role</div>
+            <div class="mode-tag" id="modeTag">—</div>
+            <div class="title-chip" id="titleChip" style="display:none">— Title</div>
+          </div>
+
+          <!-- EXP -->
+          <div class="exp-meta">
+            <div class="exp-level" id="expLevel">1 <span>LVL</span></div>
+            <div class="exp-numbers" id="expNumbers"><strong>0</strong> / 500 EXP</div>
+          </div>
+          <div class="exp-track">
+            <div class="exp-fill" id="expFill" style="width:0%"></div>
+          </div>
+
+          <!-- Stat row -->
+          <div class="profile-stats-row" id="statsRow">
+            <!-- injected by JS -->
+          </div>
+
+          <!-- Bio -->
+          <div class="profile-bio-row">
+            <div class="profile-bio empty" id="bioPara">ยังไม่มีคำแนะนำตัว</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="profile-grid">
+
+      <!-- LEFT -->
+      <div class="profile-left">
+
+        <!-- Achievement Wall -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="achTitle"><!-- injected --></div>
+            <a href="/achievement.html" class="section-link" id="achLink"><!-- injected --></a>
+          </div>
+          <div class="achievement-grid" id="achievementGrid">
+            <!-- injected -->
+          </div>
+        </div>
+
+        <!-- Quest History -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="questHistTitle"><!-- injected --></div>
+            <a href="/quest.html" class="section-link" id="questHistLink"><!-- injected --></a>
+          </div>
+          <div class="quest-list" id="questHistory">
+            <!-- injected -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT -->
+      <div class="profile-right">
+
+        <!-- Stats card -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="statsCardTitle"><!-- injected --></div>
+          </div>
+          <div class="stat-list" id="statList">
+            <!-- injected -->
+          </div>
+        </div>
+
+        <!-- Guild -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="guildTitle"><!-- injected --></div>
+            <a href="/guild.html" class="section-link" id="guildLink"><!-- injected --></a>
+          </div>
+          <div id="guildContent"><!-- injected --></div>
+        </div>
+
+        <!-- Party -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="partyTitle"><!-- injected --></div>
+            <a href="/party.html" class="section-link" id="partyLink"><!-- injected --></a>
+          </div>
+          <div id="partyContent"><!-- injected --></div>
+        </div>
+
+        <!-- Mood (last 7 days) -->
+        <div class="card">
+          <div class="section-head">
+            <div class="section-title" id="moodTitle"><!-- injected --></div>
+            <a href="/mood.html" class="section-link" id="moodLink"><!-- injected --></a>
+          </div>
+          <div class="mood-row" id="moodChart"><!-- injected --></div>
+          <div class="mood-labels" id="moodLabels"><!-- injected --></div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { icon } from '/icons.js';
+    import { initSidebar } from '/sidebar.js';
+    import { currentState } from '/auth.js';
+    import { requireAuth } from '/auth.js';
+    import { supabase } from '/api.js';
+
+    /* ─── GUARD ─── */
+    requireAuth();
+
+    /* ─── INIT SIDEBAR ─── */
+    document.addEventListener('DOMContentLoaded', () => initSidebar());
+
+    /* ─── HELPERS ─── */
+    function expToNextLevel(lvl) { return 500 + (lvl - 1) * 200; }
+    function joinedDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('th-TH', { year:'numeric', month:'short', day:'numeric' });
+    }
+
+    /* ─── ROLE COLOR MAP ─── */
+    const ROLE_COLORS = {
+      scholar:'#7b68ee', warlord:'#e74c3c', warden:'#27ae60', culinart:'#e67e22',
+      artisan:'#9b59b6', merchant:'#f1c40f', envoy:'#1abc9c', ascetic:'#bdc3c7',
+      pathfinder:'#d35400', chronicler:'#3498db', forgemaster:'#7f8c8d',
+      bard:'#e91e8c', sage:'#f39c12', herald:'#00bcd4', paladin:'#c9882a',
+    };
+
+    /* ─── MOOD COLORS ─── */
+    const MOOD_COLORS = ['#e74c3c','#e67e22','#f1c40f','#27ae60','#2ecc71'];
+    const MOOD_LABELS_TH = ['จันทร์','อังคาร','พุธ','พฤหัส','ศุกร์','เสาร์','อาทิตย์'];
+
+    /* ─── ACHIEVEMENTS REGISTRY (static) ─── */
+    const ACH_DEF = [
+      { key:'consistent_hero',  icon:'habit',       name:'Consistent Hero',  cond:'Login 7 days' },
+      { key:'quest_master',     icon:'quest',       name:'Quest Master',     cond:'100 quests' },
+      { key:'trusted_trader',   icon:'verified',    name:'Trusted Trader',   cond:'KYC verified' },
+      { key:'explorer',         icon:'pin',         name:'Explorer',         cond:'10 locations' },
+      { key:'loyal_member',     icon:'guild',       name:'Loyal Member',     cond:'30 days guild' },
+      { key:'season_champion',  icon:'trophy',      name:'Champion',         cond:'Season #1' },
+      { key:'habit_streak',     icon:'flame',       name:'Habit Streak',     cond:'30-day streak' },
+    ];
+
+    /* ─── RENDER ─── */
+    async function render() {
+      const { user, profile } = currentState();
+      const isOwn = true; // simplified; compare URL param vs user.id in full build
+
+      /* ── Avatar ── */
+      const avatarEl = document.getElementById('avatarEl');
+      if (profile?.avatar_url) {
+        const img = document.createElement('img');
+        img.src = profile.avatar_url;
+        img.alt = profile.display_name || 'Avatar';
+        img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%';
+        avatarEl.appendChild(img);
+      } else {
+        avatarEl.innerHTML = icon('user', 38);
+      }
+
+      /* ── Avatar edit (own profile only) ── */
+      const editBtn = document.getElementById('avatarEditBtn');
+      if (isOwn) {
+        editBtn.style.display = 'flex';
+        editBtn.innerHTML = icon('edit', 10) + ' แก้ไข';
+        editBtn.addEventListener('click', () => {/* open avatar modal */});
+      }
+
+      /* ── Online dot ── */
+      const dot = document.getElementById('onlineDot');
+      const isOnline = profile?.is_online ?? true;
+      dot.style.background = isOnline ? 'var(--green-bright)' : 'var(--txt-muted)';
+      dot.style.boxShadow = isOnline ? 'var(--glow-green)' : 'none';
+      dot.title = isOnline ? 'Online' : 'Offline';
+
+      /* ── Name / UID ── */
+      const name = profile?.display_name || 'Adventurer';
+      document.getElementById('pageTitle').textContent = isOwn ? 'My Profile' : name;
+      document.getElementById('displayName').textContent = name;
+      document.getElementById('profileUid').textContent = '@' + (profile?.username || user?.id?.slice(0,8) || '—');
+
+      /* ── Verified badge ── */
+      const verBadge = document.getElementById('verifiedBadge');
+      if (profile?.is_verified) {
+        verBadge.style.display = 'inline-flex';
+        verBadge.innerHTML = icon('verified', 11) + ' Verified';
+      }
+
+      /* ── Role / Mode ── */
+      const roleKey  = profile?.current_role  || 'scholar';
+      const roleMode = profile?.role_mode      || 'choose';
+      const roleColor = ROLE_COLORS[roleKey] || 'var(--gold)';
+      const roleBadge = document.getElementById('roleBadge');
+      roleBadge.innerHTML = icon(roleKey, 13) + ' ' + (roleKey.charAt(0).toUpperCase() + roleKey.slice(1));
+      roleBadge.style.color = roleColor;
+      roleBadge.style.borderColor = roleColor + '55';
+      roleBadge.style.background = roleColor + '18';
+
+      const modeTag = document.getElementById('modeTag');
+      modeTag.textContent = roleMode === 'random' ? 'Random +25% EXP' : 'Choose Mode';
+
+      /* ── Title chip ── */
+      const titleChip = document.getElementById('titleChip');
+      if (profile?.active_title) {
+        titleChip.style.display = 'inline-flex';
+        titleChip.innerHTML = icon('crown', 12) + ' ' + profile.active_title;
+      }
+
+      /* ── EXP ── */
+      const lvl    = profile?.level || 1;
+      const exp    = profile?.exp   || 0;
+      const expMax = expToNextLevel(lvl);
+      const pct    = Math.min(100, Math.round((exp / expMax) * 100));
+      document.getElementById('expLevel').innerHTML = `${lvl} <span>LVL</span>`;
+      document.getElementById('expNumbers').innerHTML = `<strong>${exp.toLocaleString()}</strong> / ${expMax.toLocaleString()} EXP`;
+      setTimeout(() => { document.getElementById('expFill').style.width = pct + '%'; }, 120);
+
+      /* ── Stats Row ── */
+      const stats = [
+        { iconKey:'quest',      val: profile?.total_quests   || 0,  lbl:'Quests' },
+        { iconKey:'habit',      val: profile?.habit_streak   || 0,  lbl:'Streak' },
+        { iconKey:'pin',        val: profile?.checkin_count  || 0,  lbl:'Check-ins' },
+        { iconKey:'trophy',     val: profile?.season_rank    || '—', lbl:'Rank' },
+      ];
+      document.getElementById('statsRow').innerHTML = stats.map(s => `
+        <div class="stat-item">
+          ${icon(s.iconKey, 15)}
+          <div>
+            <div class="stat-val">${typeof s.val === 'number' ? s.val.toLocaleString() : s.val}</div>
+            <div class="stat-lbl">${s.lbl}</div>
+          </div>
+        </div>
+      `).join('');
+
+      /* ── Bio ── */
+      const bio = document.getElementById('bioPara');
+      if (profile?.bio) {
+        bio.textContent = profile.bio;
+        bio.classList.remove('empty');
+      }
+
+      /* ── Header actions ── */
+      const actions = document.getElementById('headerActions');
+      if (isOwn) {
+        actions.innerHTML = `
+          <button class="btn btn-outline" id="editProfileBtn">
+            ${icon('edit', 14)} แก้ไขโปรไฟล์
+          </button>
+        `;
+      } else {
+        actions.innerHTML = `
+          <button class="btn btn-outline" id="addFriendBtn">
+            ${icon('friend', 14)} เพิ่มเพื่อน
+          </button>
+          <button class="btn btn-ghost" id="reportBtn">
+            ${icon('report', 14)} รายงาน
+          </button>
+        `;
+      }
+
+      /* ── Section titles ── */
+      document.getElementById('achTitle').innerHTML        = icon('achievement', 15) + ' <span>Achievements</span>';
+      document.getElementById('achLink').innerHTML         = 'ดูทั้งหมด ' + icon('chevron_right', 13);
+      document.getElementById('questHistTitle').innerHTML  = icon('quest', 15)       + ' <span>Quest History</span>';
+      document.getElementById('questHistLink').innerHTML   = 'ดูทั้งหมด ' + icon('chevron_right', 13);
+      document.getElementById('statsCardTitle').innerHTML  = icon('analytics', 15)   + ' <span>Statistics</span>';
+      document.getElementById('guildTitle').innerHTML      = icon('guild', 15)        + ' <span>Guild</span>';
+      document.getElementById('guildLink').innerHTML       = 'ดูเพิ่ม ' + icon('chevron_right', 13);
+      document.getElementById('partyTitle').innerHTML      = icon('party', 15)        + ' <span>Party</span>';
+      document.getElementById('partyLink').innerHTML       = 'ดูเพิ่ม ' + icon('chevron_right', 13);
+      document.getElementById('moodTitle').innerHTML       = icon('mood', 15)         + ' <span>Mood (7 วัน)</span>';
+      document.getElementById('moodLink').innerHTML        = 'บันทึก ' + icon('chevron_right', 13);
+
+      /* ── Achievements ── */
+      const unlockedKeys = profile?.achievements || [];
+      document.getElementById('achievementGrid').innerHTML = ACH_DEF.map(a => {
+        const unlocked = unlockedKeys.includes(a.key);
+        return `
+          <div class="ach-tile ${unlocked ? 'unlocked' : 'locked'}" title="${a.name}: ${a.cond}">
+            <div class="ach-icon">${icon(a.icon, 18)}</div>
+            <div class="ach-name">${a.name}</div>
+          </div>
+        `;
+      }).join('');
+
+      /* ── Quest History (mock/placeholder — replace with Supabase query) ── */
+      const MOCK_QUESTS = [
+        { name:'อ่านหนังสือ 30 นาที',       role:'scholar',    exp:80,  date:'วันนี้' },
+        { name:'ออกกำลังกาย 20 นาที',        role:'warlord',    exp:100, date:'เมื่อวาน' },
+        { name:'ทำอาหารเย็นเอง',             role:'culinart',   exp:90,  date:'3 วันก่อน' },
+        { name:'ถ่ายภาพและบันทึกเรื่องราว',  role:'chronicler', exp:70,  date:'5 วันก่อน' },
+      ];
+      document.getElementById('questHistory').innerHTML = MOCK_QUESTS.map(q => `
+        <div class="quest-entry">
+          <div class="quest-icon">${icon(q.role, 16)}</div>
+          <div class="quest-body">
+            <div class="quest-name">${q.name}</div>
+            <div class="quest-meta">
+              <span class="quest-exp">+${q.exp} EXP</span>
+              <span class="quest-role-tag">${q.role}</span>
+              <span class="quest-date">${q.date}</span>
+            </div>
+          </div>
+          <div>${icon('check', 14)}</div>
+        </div>
+      `).join('');
+
+      /* ── Stats list ── */
+      const STATS = [
+        { iconKey:'exp',        label:'Total EXP',       val: (profile?.total_exp || exp).toLocaleString(),       gold:true },
+        { iconKey:'level',      label:'Level',           val: lvl },
+        { iconKey:'flame',      label:'Best Habit Streak', val: (profile?.best_streak || 0) + ' วัน' },
+        { iconKey:'quest',      label:'Quests Completed', val: (profile?.total_quests || 0).toLocaleString() },
+        { iconKey:'trophy',     label:'Seasonal Rank',   val: profile?.season_rank || '—',                        gold:!!profile?.season_rank },
+        { iconKey:'season',     label:'Season',          val: 'Ember of the Ashlands' },
+        { iconKey:'pin',        label:'Check-ins',       val: profile?.checkin_count || 0 },
+        { iconKey:'user',       label:'Member Since',    val: joinedDate(user?.created_at) },
+      ];
+      document.getElementById('statList').innerHTML = STATS.map(s => `
+        <div class="stat-row">
+          <div class="stat-row-label">${icon(s.iconKey, 14)} ${s.label}</div>
+          <div class="stat-row-val ${s.gold ? 'gold' : ''}">${s.val}</div>
+        </div>
+      `).join('');
+
+      /* ── Guild ── */
+      const guildContent = document.getElementById('guildContent');
+      const guild = profile?.guild;
+      if (guild) {
+        guildContent.innerHTML = `
+          <div class="guild-card">
+            <div class="guild-emblem">${icon('guild', 22)}</div>
+            <div class="guild-info">
+              <div class="guild-name">${guild.name || 'My Guild'}</div>
+              <div class="guild-role-tag">${guild.member_role || 'Member'}</div>
+            </div>
+            <div class="guild-members">${icon('users_admin', 13)} ${guild.member_count || 1}</div>
+          </div>
+        `;
+      } else {
+        guildContent.innerHTML = `
+          <div class="empty-state">
+            ${icon('guild', 32)}
+            <p>ยังไม่ได้เข้าร่วม Guild</p>
+          </div>
+        `;
+      }
+
+      /* ── Party ── */
+      const partyContent = document.getElementById('partyContent');
+      const party = profile?.party;
+      if (party?.members?.length) {
+        partyContent.innerHTML = `<div class="party-members-list">` +
+          party.members.map(m => `
+            <div class="party-member">
+              <div class="party-avatar">${(m.name || 'A').charAt(0)}</div>
+              <div class="party-member-name">${m.name || 'Adventurer'}</div>
+              <div class="party-member-level">Lv.${m.level || 1}</div>
+            </div>
+          `).join('') +
+        `</div>`;
+      } else {
+        partyContent.innerHTML = `
+          <div class="empty-state">
+            ${icon('party', 32)}
+            <p>ยังไม่ได้อยู่ใน Party</p>
+          </div>
+        `;
+      }
+
+      /* ── Mood Chart (7 days mock) ── */
+      const MOCK_MOOD = [3, 4, 2, 5, 4, 3, 4]; // 1–5
+      const moodChart = document.getElementById('moodChart');
+      moodChart.innerHTML = MOCK_MOOD.map((m, i) => `
+        <div class="mood-bar" style="
+          height:${(m / 5) * 100}%;
+          background:${MOOD_COLORS[m - 1]};
+          opacity:.8;
+        " title="${MOOD_LABELS_TH[i]}: ${m}/5"></div>
+      `).join('');
+
+      const moodLabels = document.getElementById('moodLabels');
+      moodLabels.innerHTML = MOOD_LABELS_TH.slice(-7).map(d =>
+        `<span class="mood-label">${d.slice(0,2)}</span>`
+      ).join('');
+    }
+
+    render();
+  </script>
+
+</body>
+</html>
